@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TowerDefens:FrontLine — Фонд Развития и Продвижения</title>
+<meta name="description" content="Сбор Робуксов на развитие и продвижение Tower Defense от первого лица. Команда God1s Work1s.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<style>
+:root{
+  --bg:#06070d; --bg2:#0b0d1a; --green:#39ff88; --violet:#a35cff; --amber:#ffb020; --text:#ecebf7; --muted:#98a0bd;
+  --glass:rgba(255,255,255,.05); --line:rgba(255,255,255,.13);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{background:var(--bg);color:var(--text);font-family:'Rubik',system-ui,sans-serif;overflow-x:hidden}
+h1,h2,h3,.disp{font-family:'Unbounded','Rubik',system-ui,sans-serif}
+.bgfx{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(650px 420px at 88% 6%,rgba(163,92,255,.22),transparent 70%),
+  radial-gradient(520px 420px at 4% 45%,rgba(57,255,136,.12),transparent 70%),
+  linear-gradient(var(--bg),var(--bg2))}
+.grid-bg{position:fixed;inset:0;z-index:-1;opacity:.3;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse at 50% 15%,#000,transparent 72%);mask-image:radial-gradient(ellipse at 50% 15%,#000,transparent 72%)}
+.scan{position:fixed;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)}
+.glass{background:var(--glass);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:16px}
+.hud{position:relative}
+.hud::before,.hud::after{content:"";position:absolute;width:18px;height:18px;pointer-events:none;transition:.3s}
+.hud::before{top:-1px;left:-1px;border-top:2px solid var(--green);border-left:2px solid var(--green);border-top-left-radius:16px}
+.hud::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--violet);border-right:2px solid var(--violet);border-bottom-right-radius:16px}
+.lift{transition:transform .3s,box-shadow .3s,border-color .3s}
+.lift:hover{transform:translateY(-6px);border-color:rgba(57,255,136,.55);box-shadow:0 14px 40px -14px rgba(57,255,136,.45)}
+.lift:hover.hud::before,.lift:hover.hud::after{width:30px;height:30px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;border-radius:12px;padding:.85rem 1.5rem;color:#04120a;background:linear-gradient(135deg,var(--green),#7dffb8);box-shadow:0 0 22px rgba(57,255,136,.45);transition:transform .2s,box-shadow .2s;cursor:pointer;border:0;text-align:center}
+.btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 42px rgba(57,255,136,.8)}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+.btn.violet{color:#fff;background:linear-gradient(135deg,#7b2dff,var(--violet));box-shadow:0 0 22px rgba(163,92,255,.5)}
+.btn.violet:hover{box-shadow:0 0 42px rgba(163,92,255,.9)}
+.btn.ghost{color:var(--text);background:var(--glass);border:1px solid var(--line);box-shadow:none}
+.btn.ghost:hover{border-color:var(--green);box-shadow:0 0 24px rgba(57,255,136,.35)}
+.glow-g{color:var(--green);text-shadow:0 0 18px rgba(57,255,136,.6)}
+.glow-v{color:var(--violet);text-shadow:0 0 18px rgba(163,92,255,.6)}
+.title-grad{background:linear-gradient(100deg,#fff 5%,var(--green) 50%,var(--violet) 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.track{height:36px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid var(--line);overflow:hidden;position:relative}
+.track::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(6,7,13,.8) calc(10% - 2px) 10%);pointer-events:none}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#14c75f,var(--green));box-shadow:0 0 28px var(--green);transition:width 2s cubic-bezier(.2,.8,.2,1);animation:pulse 1.8s ease-in-out infinite;position:relative}
+.fill::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.22) 0 10px,transparent 10px 24px);animation:slide 1.2s linear infinite}
+@keyframes pulse{50%{box-shadow:0 0 50px var(--green);filter:brightness(1.18)}}
+@keyframes slide{to{background-position:48px 0}}
+@keyframes float{50%{transform:translateY(-12px) rotate(4deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinr{to{transform:rotate(-360deg)}}
+.floaty{animation:float 5s ease-in-out infinite}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+.tab{padding:.5rem 1.1rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);transition:.2s;cursor:pointer;background:none}
+.tab[aria-pressed=true]{color:#04120a;background:var(--green);border-color:var(--green);box-shadow:0 0 16px rgba(57,255,136,.5)}
+.tl{position:relative;padding-left:2.2rem}
+.tl::before{content:"";position:absolute;left:11px;top:0;bottom:-20px;width:2px;background:linear-gradient(var(--green),var(--violet),var(--line))}
+.tl:last-child::before{display:none}
+.dot{position:absolute;left:3px;top:20px;width:18px;height:18px;border-radius:4px;transform:rotate(45deg);background:var(--bg);border:3px solid var(--violet)}
+.dot.done{border-color:var(--green);background:var(--green);box-shadow:0 0 14px var(--green)}
+.mini{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.mini i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--green));transition:width 1.6s ease-out}
+.inp{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;color:var(--text)}
+.inp::placeholder{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="bgfx"></div><div class="grid-bg"></div><div class="scan"></div>
+
+<div id="refBanner" class="hidden fixed top-[72px] inset-x-0 z-40 px-4">
+  <div class="mx-auto max-w-xl glass px-4 py-2 text-sm text-center" style="border-color:rgba(163,92,255,.6)">🎬 Ты пришёл по ссылке креатора <b class="glow-v" id="refName"></b>. Спасибо, что поддерживаешь проект!</div>
+</div>
+
+<header class="fixed top-0 inset-x-0 z-50" style="padding-top:env(safe-area-inset-top,0px)">
+  <div class="mx-auto max-w-6xl px-4 pt-3">
+    <div class="glass flex items-center justify-between px-4 py-2.5">
+      <a href="#top" class="disp font-extrabold tracking-tight text-sm sm:text-base" id="logo"></a>
+      <nav class="hidden md:flex gap-6 text-sm text-[color:var(--muted)]">
+        <a class="hover:text-white" href="#about">Об игре</a><a class="hover:text-white" href="#goal">Сбор</a><a class="hover:text-white" href="#honor">Награды</a><a class="hover:text-white" href="#passes">Пассы</a><a class="hover:text-white" href="#roadmap">Roadmap</a><a class="hover:text-white" href="#creators">Креаторам</a>
+      </nav>
+      <a href="#passes" class="btn !py-2 !px-4 text-sm">Поддержать</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<section class="relative mx-auto max-w-6xl px-4 pt-32 pb-20 md:pt-44 text-center md:text-left overflow-hidden">
+  <svg class="absolute right-[-60px] md:right-4 top-24 w-[340px] md:w-[460px] opacity-25 md:opacity-60 pointer-events-none" viewBox="0 0 200 200" aria-hidden="true">
+    <g style="transform-origin:100px 100px;animation:spin 40s linear infinite"><circle cx="100" cy="100" r="92" fill="none" stroke="#39ff88" stroke-width="1.5" stroke-dasharray="3 9"/></g>
+    <g style="transform-origin:100px 100px;animation:spinr 26s linear infinite"><circle cx="100" cy="100" r="68" fill="none" stroke="#a35cff" stroke-width="2" stroke-dasharray="40 14"/></g>
+    <circle cx="100" cy="100" r="40" fill="none" stroke="#39ff88" stroke-width="1"/>
+    <path d="M100 4v46M100 150v46M4 100h46M150 100h46" stroke="#39ff88" stroke-width="2"/>
+    <circle cx="100" cy="100" r="3" fill="#ff4d6d"/>
+  </svg>
+  <div class="relative">
+    <p class="glass inline-flex items-center px-4 py-1.5 text-sm text-[color:var(--muted)] mb-6" style="border-radius:999px"><span class="inline-block w-2 h-2 rounded-full bg-[color:var(--green)] mr-2 animate-pulse"></span><span>Команда <b class="text-white" id="teamTop"></b> · этап сбора открыт</span></p>
+    <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.05] title-grad" id="heroTitle"></h1>
+    <p class="disp text-xl sm:text-3xl mt-4 font-medium">Фонд Развития и Продвижения</p>
+    <p class="max-w-2xl mt-6 text-[color:var(--muted)] text-base sm:text-lg leading-relaxed md:mx-0 mx-auto" id="heroSub"></p>
+    <div class="mt-9 flex flex-col sm:flex-row gap-3 md:justify-start justify-center">
+      <a href="#passes" class="btn text-lg">Поддержать проект</a>
+      <a href="#goal" class="btn violet text-lg">Шкала сбора</a>
+    </div>
+  </div>
+  <div class="relative mt-14 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl md:mx-0 mx-auto" id="alloc"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="mx-auto max-w-6xl px-4 py-16">
+  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Про игру</h2>
+  <p class="text-center text-[color:var(--muted)] mt-4 max-w-3xl mx-auto leading-relaxed rv" id="aboutText"></p>
+  <div id="features" class="grid md:grid-cols-3 gap-4 mt-10"></div>
+  <p class="text-center text-sm text-[color:var(--muted)] mt-6 rv" id="nameNote"></p>
+</section>
+
+<!-- GOAL -->
+<section id="goal" class="mx-auto max-w-4xl px-4 py-16">
+  <div class="glass hud p-6 sm:p-10 rv">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+      <div>
+        <h2 class="disp text-2xl sm:text-3xl font-extrabold">Цель этапа</h2>
+        <p class="text-[color:var(--muted)] mt-2">Собрано: <b class="glow-g text-xl" id="raised">0</b> R$ из <b id="goalAmt">0</b> R$</p>
+      </div>
+      <div class="disp text-5xl sm:text-6xl font-extrabold glow-g" id="pct">0%</div>
+    </div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar" aria-label="Прогресс сбора"><div class="fill" id="fill"></div></div>
+    <div class="flex justify-between text-xs text-[color:var(--muted)] mt-2"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center" aria-label="Время до конца этапа">
+      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="d">00</div><div class="text-xs text-[color:var(--muted)]">дней</div></div>
+      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="h">00</div><div class="text-xs text-[color:var(--muted)]">часов</div></div>
+      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="m">00</div><div class="text-xs text-[color:var(--muted)]">минут</div></div>
+      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="s">00</div><div class="text-xs text-[color:var(--muted)]">секунд</div></div>
+    </div>
+    <p class="text-center text-sm text-[color:var(--muted)] mt-4">До конца этапа сбора</p>
+  </div>
+</section>
+
+<!-- HONOR -->
+<section id="honor" class="mx-auto max-w-6xl px-4 py-16">
+  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Доска почёта</h2>
+  <p class="text-center text-[color:var(--muted)] mt-3 rv">Топ-3 донатера <span id="periodLbl">недели</span></p>
+  <div class="flex justify-center gap-2 mt-5 rv">
+    <button class="tab" data-p="week" aria-pressed="true">Неделя</button>
+    <button class="tab" data-p="month" aria-pressed="false">Месяц</button>
+  </div>
+  <div id="top3" class="grid md:grid-cols-3 gap-4 mt-8 items-end"></div>
+
+  <h3 class="disp text-xl sm:text-3xl font-extrabold text-center mt-20 rv">Эксклюзивные награды за донат</h3>
+  <div id="rewards" class="grid md:grid-cols-3 gap-4 mt-8"></div>
+</section>
+
+<!-- PASSES -->
+<section id="passes" class="mx-auto max-w-6xl px-4 py-16">
+  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Игровые пассы</h2>
+  <p class="text-center text-[color:var(--muted)] mt-3 max-w-xl mx-auto rv">Выбери пасс на roblox.com — Робуксы пойдут в фонд, а награда придёт тебе в игре.</p>
+  <div id="passGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-10"></div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap" class="mx-auto max-w-3xl px-4 py-16">
+  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Дорожная карта</h2>
+  <p class="text-center text-[color:var(--muted)] mt-3 rv">Открыто показываем, на каком этапе разработка.</p>
+  <div id="road" class="mt-10 space-y-5"></div>
+</section>
+
+<!-- CREATORS -->
+<section id="creators" class="mx-auto max-w-5xl px-4 py-16">
+  <div class="glass hud p-6 sm:p-10 rv" style="background:linear-gradient(135deg,rgba(163,92,255,.16),rgba(57,255,136,.08))">
+    <h2 class="disp text-2xl sm:text-4xl font-extrabold">Контент-мейкерам</h2>
+    <p class="text-[color:var(--muted)] mt-3 max-w-2xl" id="crIntro"></p>
+    <ol id="crSteps" class="grid md:grid-cols-3 gap-4 mt-8"></ol>
+    <div class="glass p-5 mt-8">
+      <h3 class="font-semibold">Твоя реферальная ссылка</h3>
+      <p class="text-sm text-[color:var(--muted)] mt-1">Введи свой ник — получишь ссылку. Все, кто придёт по ней, увидят, что их позвал именно ты.</p>
+      <div class="flex flex-col sm:flex-row gap-3 mt-4">
+        <input id="refInput" class="inp" maxlength="24" placeholder="Твой ник (латиница, цифры)" autocomplete="off">
+        <button id="refMake" class="btn violet shrink-0">Создать ссылку</button>
+      </div>
+      <div id="refOut" class="hidden mt-4 flex flex-col sm:flex-row gap-3 items-stretch">
+        <input id="refLink" class="inp" readonly>
+        <button id="refCopy" class="btn shrink-0">Скопировать</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTS -->
+<section id="contacts" class="mx-auto max-w-5xl px-4 py-16">
+  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Связь и сообщество</h2>
+  <div id="links" class="grid sm:grid-cols-2 gap-4 mt-8"></div>
+</section>
+</main>
+
+<footer class="text-center text-sm text-[color:var(--muted)] py-10 px-4">
+  <span id="foot"></span><br>Проект не связан с Roblox Corporation. Пассы покупаются на официальном сайте roblox.com.
+</footer>
+
+<script>
+/* ==========================================================
+   КОНФИГ — ВСЁ, ЧТО НУЖНО МЕНЯТЬ, НАХОДИТСЯ ЗДЕСЬ
+   ========================================================== */
+const CFG = {
+  /* --- Игра и команда --- */
+  title1: 'TowerDefens',
+  title2: 'FrontLine',
+  team: 'God1s Work1s',
+  heroSub: 'Каждый Робукс идёт прямо в проект: на маркетинг, 3D-модели, работу скриптеров и рекламу в TikTok и YouTube Shorts. Чем больше соберём, тем быстрее выпустим игру и тем больше игроков о ней узнают.',
+  about: 'Уникальный Tower Defense, где ты управляешь башнями от первого лица. Получай скины и новые башни, попадай в таблицу лидеров — за место в ней в игре дают бонусы.',
+  nameNote: 'FrontLine («Линия фронта») — это просто название игры.',
+  features: [
+    {i:'🎯', t:'Башни от первого лица', d:'Не просто расставляй башни — встань за прицел и сам отбивай волны.'},
+    {i:'🎨', t:'Скины и башни', d:'Открывай новые башни и скины за прогресс и поддержку проекта.'},
+    {i:'🏆', t:'Таблица лидеров', d:'Лучшие игроки попадают в рейтинг и получают бонусы в игре.'}
+  ],
+
+  /* --- Сбор --- */
+  raised: 0,                         // сколько собрано сейчас (R$)
+  goal: 50000,                       // цель (R$)
+  deadline: '2026-12-01T23:59:59',   // конец этапа сбора
+  allocation: [                      // на что идут средства (проценты — просто текст, поправь под себя)
+    {p:'35%', t:'на маркетинг и рекламу', c:'g'},
+    {p:'30%', t:'на 3D-модели и билдинг', c:'v'},
+    {p:'25%', t:'на скриптеров', c:'g'},
+    {p:'10%', t:'на призы и конкурсы', c:'v'}
+  ],
+
+  /* --- Ссылки и контакты --- */
+  discordUrl: 'https://discord.gg/Bws2Jg89dU',
+  telegramUrl: 'https://t.me/TowerDefensF',
+  ownerTg: 'grease11123',            // без @
+  ownerDs: 'mmr1337',
+
+  /* --- ГЕЙМПАССЫ ---
+     Чтобы добавить новый, просто допиши ещё одну строку в список.
+     Обязательно: price и url. Остальное необязательно (name, desc, icon).
+     Пример:  {price:2000, url:'https://roblox.com/game-pass/ID/', name:'Мега-пасс', icon:'🔥', desc:'Описание'}   */
+  sortPassesByPrice: true,
+  passes: [
+    {price:50,   url:'https://roblox.com/game-pass/2046122592/', name:'Пакет Новичка',     icon:'🎒', desc:'Первый шаг в команду: ты в списке поддержавших и получаешь роль в Discord.'},
+    {price:500,  url:'https://roblox.com/game-pass/2063757915/', name:'Спонсор Проекта',   icon:'🛡️', desc:'Ранний доступ к ЗБТ и бейдж «Инвестор».'},
+    {price:750,  url:'https://roblox.com/game-pass/2064121444/', name:'Командир Фронта',   icon:'⚔️', desc:'Расширенная поддержка: вклад в рекламу и модели, особая роль в команде.'},
+    {price:1000, url:'https://roblox.com/game-pass/2063807698',  name:'Легендарный Вклад', icon:'👑', desc:'Уникальный скин или предмет и доступ в закрытый чат разработчиков.'}
+  ],
+
+  /* --- Топ донатеров (пока пусто — места покажутся свободными).
+     Пример строки: {n:'Ник', v:1200} --- */
+  top: { week: [], month: [] },
+
+  /* --- Награды --- */
+  rewards: [
+    {min:'100 R$',   t:'Роль и кредиты',  i:'🎖️', d:'Уникальная роль на Discord-сервере + ник в кредитах игры.'},
+    {min:'500 R$',   t:'Ранний доступ',   i:'🔑', d:'Ранний доступ к ЗБТ (закрытому бета-тесту) + бейдж «Инвестор».'},
+    {min:'1000+ R$', t:'Легенда проекта', i:'💎', d:'Уникальный внутриигровой скин или предмет + доступ в закрытый чат разработчиков.'}
+  ],
+
+  /* --- Дорожная карта (p — процент готовности) --- */
+  road: [
+    {t:'Волна 1 · Билдинг карт',        p:80, s:'В работе'},
+    {t:'Волна 2 · Скриптинг механик',   p:50, s:'В работе'},
+    {t:'Волна 3 · Запуск маркетинга',   p:20, s:'Стартовал'},
+    {t:'Волна 4 · Закрытый бета-тест',  p:0,  s:'Скоро'},
+    {t:'Волна 5 · Релиз',               p:0,  s:'Планируется'}
+  ],
+
+  /* --- Креаторам --- */
+  crIntro: 'Снимай по одному видео в день про проект и фонд — получай бонусы и процент с поддержки, пришедшей по твоей ссылке.',
+  crSteps: [
+    {t:'Сними ролик',            d:'15–45 секунд: геймплей, обзор башен или рассказ о фонде. Добавь хэштег #TowerDefensFrontLine.'},
+    {t:'Выложи на свой аккаунт', d:'TikTok, YouTube Shorts или Reels. Один ролик в день, минимум 7 дней подряд.'},
+    {t:'Пришли ссылки и получи бонус', d:'Напиши владельцу в Telegram или Discord, приложи ссылки на ролики и свою реф-ссылку — получишь роль «Медиа» и процент.'}
+  ]
+};
+/* ===================== КОНЕЦ КОНФИГА ===================== */
+
+const $ = s => document.querySelector(s);
+const fmt = n => Number(n).toLocaleString('ru-RU').replace(/\u00a0/g,' ');
+const robux = (sz=18) => `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5l9 5.2v10.6l-9 5.2-9-5.2V6.7z" fill="none" stroke="#39ff88" stroke-width="2"/><rect x="8" y="8" width="8" height="8" rx="1" fill="#39ff88"/></svg>`;
+const avatar = (c1,c2,ghost) => `<svg viewBox="0 0 64 64" class="w-20 h-20 mx-auto" aria-hidden="true" style="${ghost?'opacity:.35':''}"><rect width="64" height="64" rx="16" fill="${c1}" opacity=".25"/><rect x="20" y="8" width="24" height="24" rx="4" fill="${c2}"/><rect x="24" y="16" width="4" height="5" fill="#111"/><rect x="36" y="16" width="4" height="5" fill="#111"/><rect x="26" y="25" width="12" height="2" rx="1" fill="#111"/><rect x="14" y="34" width="36" height="22" rx="4" fill="${c1}"/><rect x="8" y="34" width="6" height="18" rx="3" fill="${c2}"/><rect x="50" y="34" width="6" height="18" rx="3" fill="${c2}"/></svg>`;
+const copy = async (text, btn, ok='Скопировано ✓') => {
+  try{ await navigator.clipboard.writeText(text); }catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand('copy')}catch(_){} t.remove(); }
+  if(btn){ const o=btn.textContent; btn.textContent=ok; setTimeout(()=>btn.textContent=o,1600); }
+};
+
+/* ---- Тексты ---- */
+document.title = `${CFG.title1}:${CFG.title2} — Фонд Развития и Продвижения`;
+$('#logo').innerHTML = `${CFG.title1.toUpperCase()}<span class="glow-g">:${CFG.title2.toUpperCase()}</span>`;
+$('#heroTitle').innerHTML = `${CFG.title1}<br class="sm:hidden">:${CFG.title2}`;
+$('#teamTop').textContent = CFG.team;
+$('#heroSub').textContent = CFG.heroSub;
+$('#aboutText').textContent = CFG.about;
+$('#nameNote').textContent = CFG.nameNote;
+$('#crIntro').textContent = CFG.crIntro;
+$('#foot').textContent = `© 2026 ${CFG.title1}:${CFG.title2} · команда ${CFG.team}`;
+$('#alloc').innerHTML = CFG.allocation.map(a=>`<div class="glass hud p-4"><div class="disp text-2xl ${a.c==='v'?'glow-v':'glow-g'}">${a.p}</div><div class="text-xs text-[color:var(--muted)] mt-1">${a.t}</div></div>`).join('');
+$('#features').innerHTML = CFG.features.map((f,i)=>`<div class="glass hud lift p-6 rv" style="transition-delay:${i*90}ms"><div class="text-4xl">${f.i}</div><h3 class="font-semibold text-lg mt-3">${f.t}</h3><p class="text-sm text-[color:var(--muted)] mt-2 leading-relaxed">${f.d}</p></div>`).join('');
+$('#crSteps').innerHTML = CFG.crSteps.map((s,i)=>`<li class="glass p-5"><div class="disp text-3xl ${i%2?'glow-v':'glow-g'}">${i+1}</div><p class="font-semibold mt-2">${s.t}</p><p class="text-sm text-[color:var(--muted)] mt-1">${s.d}</p></li>`).join('');
+
+/* ---- Контакты ---- */
+$('#links').innerHTML = `
+  <a class="glass hud lift p-5 flex items-center gap-4 rv" href="${CFG.discordUrl}" target="_blank" rel="noopener"><span class="text-3xl">💬</span><span><b>Discord-сервер игры</b><br><span class="text-sm text-[color:var(--muted)]">Новости, роли, общение с командой</span></span></a>
+  <a class="glass hud lift p-5 flex items-center gap-4 rv" href="${CFG.telegramUrl}" target="_blank" rel="noopener"><span class="text-3xl">📣</span><span><b>Telegram-канал игры</b><br><span class="text-sm text-[color:var(--muted)]">Анонсы и обновления проекта</span></span></a>
+  <a class="glass hud lift p-5 flex items-center gap-4 rv" href="https://t.me/${CFG.ownerTg}" target="_blank" rel="noopener"><span class="text-3xl">✈️</span><span><b>Владелец в Telegram</b><br><span class="text-sm glow-g">@${CFG.ownerTg}</span></span></a>
+  <button class="glass hud lift p-5 flex items-center gap-4 rv text-left w-full" id="dsCopy" type="button"><span class="text-3xl">🎮</span><span><b>Владелец в Discord</b><br><span class="text-sm glow-v" id="dsTxt">${CFG.ownerDs}</span> <span class="text-xs text-[color:var(--muted)]">· нажми, чтобы скопировать</span></span></button>`;
+$('#dsCopy').addEventListener('click',()=>copy(CFG.ownerDs,$('#dsTxt'),'Ник скопирован ✓'));
+
+/* ---- Шкала сбора ---- */
+$('#goalAmt').textContent = fmt(CFG.goal);
+const pctVal = Math.min(100, Math.round(CFG.raised / CFG.goal * 100));
+$('#bar').setAttribute('aria-valuenow', pctVal);
+function countUp(el,to,suffix='',dur=2000,f=x=>x){ const t0=performance.now(); (function step(t){ const k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3); el.textContent=f(Math.round(to*e))+suffix; if(k<1) requestAnimationFrame(step); })(t0); }
+new IntersectionObserver((e,o)=>{ if(e[0].isIntersecting){
+  const w = CFG.raised>0 ? Math.max(pctVal,3) : 0;
+  $('#fill').style.width = w+'%'; if(!w) $('#fill').style.animation='none';
+  countUp($('#raised'),CFG.raised,'',2000,fmt); countUp($('#pct'),pctVal,'%'); o.disconnect(); } },{threshold:.4}).observe($('#goal'));
+
+/* ---- Таймер ---- */
+(function tick(){
+  const d = Math.max(0,new Date(CFG.deadline)-new Date())/1000;
+  const v = {d:Math.floor(d/86400),h:Math.floor(d%86400/3600),m:Math.floor(d%3600/60),s:Math.floor(d%60)};
+  for(const k in v) document.querySelector(`[data-t=${k}]`).textContent = String(v[k]).padStart(2,'0');
+  setTimeout(tick,1000);
+})();
+
+/* ---- Топ донатеров ---- */
+const medals = [
+  {l:'Золото',  c:'#ffd166', c2:'#ff9f1c', h:'md:pt-8', order:'md:order-2', ico:'🥇'},
+  {l:'Серебро', c:'#cfd6e6', c2:'#8f9bb5', h:'',        order:'md:order-1', ico:'🥈'},
+  {l:'Бронза',  c:'#e0915a', c2:'#a65a2a', h:'',        order:'md:order-3', ico:'🥉'}
+];
+function renderTop(p){
+  const list = CFG.top[p] || [];
+  $('#top3').innerHTML = medals.map((m,i)=>{ const u=list[i]; return `
+  <div class="glass hud lift p-6 text-center ${m.order} ${m.h}" style="border-color:${m.c}66;box-shadow:0 0 30px -12px ${m.c}">
+    <div class="text-3xl">${m.ico}</div>
+    ${avatar(m.c2,m.c,!u)}
+    <div class="font-semibold mt-3 truncate">${u?u.n:'Место свободно'}</div>
+    <div class="text-xs mb-2" style="color:${m.c}">${m.l}</div>
+    ${u?`<div class="disp font-extrabold text-xl flex items-center justify-center gap-1.5">${robux(20)}${fmt(u.v)}</div>`:`<div class="text-sm text-[color:var(--muted)]">Стань первым в этом месте</div>`}
+  </div>`}).join('');
+}
+renderTop('week');
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('#periodLbl').textContent = b.dataset.p==='week'?'недели':'месяца';
+  renderTop(b.dataset.p);
+}));
+
+/* ---- Награды ---- */
+$('#rewards').innerHTML = CFG.rewards.map((r,i)=>`
+  <div class="glass hud lift p-6 rv" style="transition-delay:${i*90}ms">
+    <div class="text-4xl">${r.i}</div>
+    <div class="disp text-2xl font-extrabold mt-4 ${i==1?'glow-v':'glow-g'}">${r.min}</div>
+    <div class="font-semibold mt-1">${r.t}</div>
+    <p class="text-sm text-[color:var(--muted)] mt-2 leading-relaxed">${r.d}</p>
+  </div>`).join('');
+
+/* ---- Геймпассы ---- */
+const palette = [['#14c75f','#39ff88'],['#6d28ff','#a35cff'],['#ff9f1c','#ffd166'],['#00b4ff','#7bdcff'],['#ff4d6d','#ff9aae'],['#00c2a8','#6ff2dc']];
+let passes = CFG.passes.slice(); if(CFG.sortPassesByPrice) passes.sort((a,b)=>a.price-b.price);
+$('#passGrid').innerHTML = passes.map((p,i)=>{ const c=palette[i%palette.length]; return `
+  <article class="glass hud lift p-5 flex flex-col rv" style="transition-delay:${i*90}ms">
+    <div class="h-36 rounded-xl grid place-items-center text-6xl relative overflow-hidden" style="background:linear-gradient(135deg,${c[0]},${c[1]})">
+      <span class="floaty" style="animation-delay:${-i}s">${p.icon||'🎟️'}</span>
+      <span class="absolute inset-0" style="background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.35),transparent 55%)"></span>
+    </div>
+    <h3 class="disp font-extrabold text-lg mt-4">${p.name||('Пасс на '+fmt(p.price)+' R$')}</h3>
+    <div class="flex items-center gap-1.5 mt-1 font-semibold text-[color:var(--green)]">${robux(20)}${fmt(p.price)} R$</div>
+    <p class="text-sm text-[color:var(--muted)] mt-2 leading-relaxed flex-1">${p.desc||'Поддержка развития и продвижения проекта.'}</p>
+    <a class="btn mt-5" href="${p.url}" target="_blank" rel="noopener">Купить / Поддержать</a>
+  </article>`}).join('');
+
+/* ---- Roadmap ---- */
+$('#road').innerHTML = CFG.road.map((r,i)=>`
+  <div class="tl rv" style="transition-delay:${i*80}ms">
+    <span class="dot ${r.p>=80?'done':''}"></span>
+    <div class="glass lift p-5">
+      <div class="flex justify-between items-center gap-3 flex-wrap">
+        <h3 class="font-semibold">${r.t}</h3>
+        <span class="text-xs px-3 py-1 rounded-full border border-[color:var(--line)] text-[color:var(--muted)]">${r.s}</span>
+      </div>
+      <div class="flex items-center gap-3 mt-3"><div class="mini flex-1"><i data-w="${r.p}"></i></div><b class="disp text-sm ${r.p?'glow-g':''}">${r.p}%</b></div>
+    </div>
+  </div>`).join('');
+
+/* ---- Рефералки ---- */
+(function(){
+  const KEY='tdfl_ref'; let ref=null;
+  const q = new URLSearchParams(location.search).get('ref');
+  try{ if(q) localStorage.setItem(KEY,q.slice(0,24)); ref = localStorage.getItem(KEY); }catch(e){ ref = q; }
+  if(ref){ $('#refName').textContent = ref; $('#refBanner').classList.remove('hidden'); }
+  $('#refMake').addEventListener('click',()=>{
+    const n = $('#refInput').value.trim().replace(/[^A-Za-z0-9_\-]/g,'').slice(0,24);
+    if(!n){ $('#refInput').focus(); return; }
+    $('#refLink').value = `${location.origin}${location.pathname}?ref=${encodeURIComponent(n)}`;
+    $('#refOut').classList.remove('hidden');
+  });
+  $('#refCopy').addEventListener('click',e=>copy($('#refLink').value,e.currentTarget));
+})();
+
+/* ---- Появление при скролле ---- */
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); e.target.querySelectorAll('[data-w]').forEach(b=>b.style.width=b.dataset.w+'%'); io.unobserve(e.target);} }),{threshold:.15});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
