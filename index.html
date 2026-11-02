@@ -1,604 +1,447 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TowerDefens:FrontLine — Фонд Развития и Продвижения</title>
-<meta name="description" content="Сбор Робуксов на развитие и продвижение Tower Defense от первого лица. Команда God1s Work1s.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#11130f">
+<title>FRONTLINE — независимая разработка Tower Defense</title>
+<meta name="description" content="Дневник разработки TowerDefense FrontLine. Следи за созданием игры и поддержи независимую команду.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#06070d; --bg2:#0b0d1a; --green:#39ff88; --violet:#a35cff; --amber:#ffb020; --text:#ecebf7; --muted:#98a0bd;
-  --glass:rgba(255,255,255,.05); --line:rgba(255,255,255,.13);
-  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-  color-scheme:dark;
+ --bg:#11130f;--panel:#191c16;--panel2:#20231b;--line:rgba(230,225,205,.13);
+ --ink:#eeeadd;--muted:#a6a596;--dim:#737567;--accent:#d6a65d;--accent2:#a86f3f;
+ --red:#b95d45;--green:#9eaa76;--max:1160px;
 }
-html{scroll-behavior:smooth;scroll-padding-top:84px}
-body{background:var(--bg);color:var(--text);font-family:'Rubik',system-ui,sans-serif;overflow-x:hidden}
-h1,h2,h3,.disp{font-family:'Unbounded','Rubik',system-ui,sans-serif}
-.bgfx{position:fixed;inset:0;z-index:-2;background:
-  radial-gradient(650px 420px at 88% 6%,rgba(163,92,255,.22),transparent 70%),
-  radial-gradient(520px 420px at 4% 45%,rgba(57,255,136,.12),transparent 70%),
-  linear-gradient(var(--bg),var(--bg2))}
-.grid-bg{position:fixed;inset:0;z-index:-1;opacity:.3;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse at 50% 15%,#000,transparent 72%);mask-image:radial-gradient(ellipse at 50% 15%,#000,transparent 72%)}
-.scan{position:fixed;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)}
-.glass{background:var(--glass);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:16px}
-.hud{position:relative}
-.hud::before,.hud::after{content:"";position:absolute;width:18px;height:18px;pointer-events:none;transition:.3s}
-.hud::before{top:-1px;left:-1px;border-top:2px solid var(--green);border-left:2px solid var(--green);border-top-left-radius:16px}
-.hud::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--violet);border-right:2px solid var(--violet);border-bottom-right-radius:16px}
-.lift{transition:transform .3s,box-shadow .3s,border-color .3s}
-.lift:hover{transform:translateY(-6px);border-color:rgba(57,255,136,.55);box-shadow:0 14px 40px -14px rgba(57,255,136,.45)}
-.lift:hover.hud::before,.lift:hover.hud::after{width:30px;height:30px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;border-radius:12px;padding:.85rem 1.5rem;color:#04120a;background:linear-gradient(135deg,var(--green),#7dffb8);box-shadow:0 0 22px rgba(57,255,136,.45);transition:transform .2s,box-shadow .2s;cursor:pointer;border:0;text-align:center}
-.btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 42px rgba(57,255,136,.8)}
-.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
-.btn.violet{color:#fff;background:linear-gradient(135deg,#7b2dff,var(--violet));box-shadow:0 0 22px rgba(163,92,255,.5)}
-.btn.violet:hover{box-shadow:0 0 42px rgba(163,92,255,.9)}
-.btn.ghost{color:var(--text);background:var(--glass);border:1px solid var(--line);box-shadow:none}
-.btn.ghost:hover{border-color:var(--green);box-shadow:0 0 24px rgba(57,255,136,.35)}
-.glow-g{color:var(--green);text-shadow:0 0 18px rgba(57,255,136,.6)}
-.glow-v{color:var(--violet);text-shadow:0 0 18px rgba(163,92,255,.6)}
-.title-grad{background:linear-gradient(100deg,#fff 5%,var(--green) 50%,var(--violet) 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.track{height:36px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid var(--line);overflow:hidden;position:relative}
-.track::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(6,7,13,.8) calc(10% - 2px) 10%);pointer-events:none}
-.fill{height:100%;width:0;background:linear-gradient(90deg,#14c75f,var(--green));box-shadow:0 0 28px var(--green);transition:width 2s cubic-bezier(.2,.8,.2,1);animation:pulse 1.8s ease-in-out infinite;position:relative}
-.fill::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.22) 0 10px,transparent 10px 24px);animation:slide 1.2s linear infinite}
-@keyframes pulse{50%{box-shadow:0 0 50px var(--green);filter:brightness(1.18)}}
-@keyframes slide{to{background-position:48px 0}}
-@keyframes float{50%{transform:translateY(-12px) rotate(4deg)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes spinr{to{transform:rotate(-360deg)}}
-.floaty{animation:float 5s ease-in-out infinite}
-.rv{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
-.rv.in{opacity:1;transform:none}
-.tab{padding:.5rem 1.1rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);transition:.2s;cursor:pointer;background:none}
-.tab[aria-pressed=true]{color:#04120a;background:var(--green);border-color:var(--green);box-shadow:0 0 16px rgba(57,255,136,.5)}
-.tl{position:relative;padding-left:2.2rem}
-.tl::before{content:"";position:absolute;left:11px;top:0;bottom:-20px;width:2px;background:linear-gradient(var(--green),var(--violet),var(--line))}
-.tl:last-child::before{display:none}
-.dot{position:absolute;left:3px;top:20px;width:18px;height:18px;border-radius:4px;transform:rotate(45deg);background:var(--bg);border:3px solid var(--violet)}
-.dot.done{border-color:var(--green);background:var(--green);box-shadow:0 0 14px var(--green)}
-.mini{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
-.mini i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--green));transition:width 1.6s ease-out}
-.inp{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;color:var(--text)}
-.inp::placeholder{color:var(--muted)}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}/* ================================
-   FIELD JOURNAL
-================================ */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:
+ radial-gradient(ellipse at 78% 5%,rgba(153,112,59,.16),transparent 34%),
+ radial-gradient(ellipse at 8% 42%,rgba(75,91,62,.12),transparent 35%),
+ linear-gradient(135deg,#11130f,#171912 55%,#10120f)}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.13;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E")}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+.wrap{width:min(var(--max),calc(100% - 44px));margin:auto}
+.eyebrow{display:flex;align-items:center;gap:10px;color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+.eyebrow:before{content:"";width:24px;height:1px;background:var(--accent)}
+.display{font-family:"Barlow Condensed",Impact,sans-serif;text-transform:uppercase;letter-spacing:-.025em;line-height:.92}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(17,19,15,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.nav{height:74px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;font-family:"Barlow Condensed",sans-serif;font-weight:900;letter-spacing:.09em;font-size:21px}
+.brand-mark{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(214,166,93,.55);color:var(--accent);font-size:17px;transform:rotate(45deg)}
+.brand-mark span{transform:rotate(-45deg)}
+.navlinks{display:flex;gap:25px;color:#c1c0b3;font-size:12px;font-weight:700}
+.navlinks a{transition:color .2s}.navlinks a:hover{color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 19px;border:1px solid var(--accent);background:var(--accent);color:#17160f;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;transition:.2s;cursor:pointer}
+.btn:hover{background:#e8bd7a;border-color:#e8bd7a;transform:translateY(-2px)}
+.btn.outline{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.outline:hover{border-color:var(--accent);color:var(--accent);background:rgba(214,166,93,.06)}
+.hero{position:relative;min-height:690px;padding:94px 0 75px;display:flex;align-items:center;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-5%;top:5%;width:62%;height:94%;z-index:-1;opacity:.85;background:
+ linear-gradient(90deg,var(--bg) 0%,rgba(17,19,15,.35) 38%,rgba(17,19,15,.02) 100%),
+ linear-gradient(0deg,var(--bg) 0%,transparent 45%),
+ radial-gradient(ellipse at 60% 48%,rgba(184,126,67,.22),transparent 52%),
+ repeating-linear-gradient(115deg,transparent 0 42px,rgba(214,166,93,.045) 43px 44px,transparent 45px 84px)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:50px}
+.hero-copy{position:relative;z-index:2}
+.kicker{display:inline-flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid var(--line);background:rgba(25,28,22,.7);color:#c4c1b2;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#a6b47b;box-shadow:0 0 12px #a6b47b}
+h1{font-size:clamp(76px,11vw,148px);margin:22px 0 16px;font-weight:900}
+h1 span{display:block;color:var(--accent);font-size:.72em;letter-spacing:.015em}
+.hero-lead{max-width:570px;color:#c1c0b3;font-size:16px;line-height:1.85}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.hero-note{margin-top:32px;display:flex;gap:22px;flex-wrap:wrap;color:var(--dim);font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.hero-note span{display:flex;align-items:center;gap:8px}.hero-note b{color:var(--accent);font-weight:800}
+.field-art{position:relative;min-height:430px;border:1px solid rgba(214,166,93,.25);background:
+ linear-gradient(180deg,rgba(17,19,15,.02),rgba(17,19,15,.75)),
+ radial-gradient(ellipse at 50% 36%,rgba(214,166,93,.20),transparent 37%),
+ linear-gradient(145deg,#333a2b,#1a2119 48%,#11150f);overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.35)}
+.field-art:before{content:"";position:absolute;inset:0;background:
+ linear-gradient(90deg,transparent 49.8%,rgba(214,166,93,.13) 50%,transparent 50.2%),
+ linear-gradient(0deg,transparent 49.8%,rgba(214,166,93,.13) 50%,transparent 50.2%),
+ repeating-linear-gradient(0deg,transparent 0 54px,rgba(214,166,93,.08) 55px 56px),
+ repeating-linear-gradient(90deg,transparent 0 54px,rgba(214,166,93,.08) 55px 56px);
+ opacity:.5}
+.field-art:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(220,176,103,.11) 49%,transparent 72%);mix-blend-mode:screen}
+.ridge{position:absolute;bottom:0;left:-5%;width:110%;height:58%;background:#151b14;clip-path:polygon(0 48%,13% 29%,23% 39%,39% 7%,51% 32%,64% 16%,78% 41%,91% 21%,100% 35%,100% 100%,0 100%)}
+.ridge.back{bottom:13%;height:47%;background:#263024;opacity:.8;clip-path:polygon(0 58%,14% 42%,25% 54%,40% 16%,54% 48%,70% 23%,83% 47%,100% 32%,100% 100%,0 100%)}
+.tower{position:absolute;bottom:25%;left:48%;width:66px;height:145px;background:linear-gradient(90deg,#555b42,#252b20);clip-path:polygon(43% 0,57% 0,64% 15%,100% 100%,0 100%,36% 15%);filter:drop-shadow(0 0 15px rgba(214,166,93,.3))}
+.tower:after{content:"";position:absolute;top:10%;left:48%;width:4px;height:65%;background:var(--accent);opacity:.6}
+.beam{position:absolute;bottom:35%;left:52%;width:270px;height:170px;background:linear-gradient(105deg,rgba(214,166,93,.18),transparent 65%);clip-path:polygon(0 35%,100% 0,100% 100%,0 65%);filter:blur(7px)}
+.art-label{position:absolute;left:22px;top:20px;color:#d2c7ad;font-size:9px;letter-spacing:.2em;font-weight:800}
+.art-coord{position:absolute;right:20px;top:20px;color:rgba(238,234,221,.5);font:11px monospace;text-align:right}
+.art-bottom{position:absolute;left:22px;right:22px;bottom:20px;display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(238,234,221,.2);padding-top:13px}
+.art-bottom strong{font:700 25px "Barlow Condensed";letter-spacing:.08em}
+.art-bottom small{display:block;color:#b7b4a4;font-size:9px;letter-spacing:.14em}
+.section{padding:100px 0;border-top:1px solid var(--line)}
+#field-journal{scroll-margin-top:88px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:38px}
+.section-head h2{font-size:clamp(42px,6vw,72px);margin:10px 0 0}
+.section-head p{max-width:400px;margin:0;color:var(--muted);font-size:13px}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.about-main{min-height:310px;padding:36px;background:var(--panel);border:1px solid var(--line);position:relative;overflow:hidden}
+.about-main:after{content:"01";position:absolute;right:18px;bottom:-42px;font:900 180px "Barlow Condensed";color:rgba(214,166,93,.06)}
+.about-main h3{font:700 34px "Barlow Condensed";text-transform:uppercase;margin:20px 0 12px}
+.about-main p{max-width:520px;color:var(--muted);font-size:14px;line-height:1.9}
+.feature-list{display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+.feature{display:grid;grid-template-columns:54px 1fr;gap:14px;padding:22px;background:var(--panel)}
+.feature-num{font:700 27px "Barlow Condensed";color:var(--accent)}
+.feature h3{font-size:14px;margin:0 0 5px}.feature p{font-size:12px;color:var(--muted);margin:0}
+.goal-panel{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;padding:38px;background:var(--panel);border:1px solid var(--line)}
+.goal-number{font:900 clamp(48px,7vw,82px) "Barlow Condensed";color:var(--accent);line-height:1}
+.goal-side p{font-size:13px;color:var(--muted);max-width:320px}
+.progress-wrap{align-self:center}
+.progress-meta{display:flex;justify-content:space-between;gap:15px;margin-bottom:12px;font-size:12px;color:var(--muted)}
+.progress-meta strong{color:var(--ink)}
+.progress{height:8px;background:#34372d;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#987143,var(--accent));transition:width 1.4s ease}
+.tickmarks{display:flex;justify-content:space-between;margin-top:9px;color:var(--dim);font:10px monospace}
+.alloc{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:16px}
+.alloc-item{padding:18px;background:var(--panel)}
+.alloc-item strong{display:block;font:700 32px "Barlow Condensed";color:var(--accent)}
+.alloc-item span{font-size:10px;color:var(--muted);line-height:1.5}
+.timer{display:flex;gap:10px;margin-top:25px}
+.timebox{min-width:60px;padding:10px 12px;background:#11140f;border:1px solid var(--line);text-align:center}
+.timebox b{display:block;font:700 25px "Barlow Condensed";color:var(--accent)}
+.timebox span{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em}
+.honor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.honor{padding:25px;background:var(--panel);border:1px solid var(--line);text-align:center;min-height:200px}
+.honor .medal{font-size:24px}.honor h3{font:700 24px "Barlow Condensed";margin:12px 0 0}.honor p{font-size:11px;color:var(--muted);margin:4px 0}
+.periods{display:flex;gap:7px;margin-bottom:20px}
+.period{padding:8px 13px;background:transparent;border:1px solid var(--line);color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;cursor:pointer}
+.period.active{background:var(--accent);border-color:var(--accent);color:#17160f}
+.reward-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.reward{padding:25px;background:linear-gradient(145deg,#20231b,#171a14);border:1px solid var(--line);position:relative}
+.reward .icon{font-size:27px}.reward .price{font:700 34px "Barlow Condensed";color:var(--accent);margin-top:22px}
+.reward h3{font:700 23px "Barlow Condensed";margin:0 0 8px;text-transform:uppercase}
+.reward p{font-size:12px;color:var(--muted);margin:0;line-height:1.8}
+.pass-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.pass{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);padding:22px;min-height:310px;transition:.2s}
+.pass:hover{border-color:rgba(214,166,93,.5);transform:translateY(-3px)}
+.pass-icon{height:82px;display:flex;align-items:center;justify-content:flex-start;font-size:36px;color:var(--accent);border-bottom:1px solid var(--line);margin-bottom:17px}
+.pass h3{font:700 24px "Barlow Condensed";text-transform:uppercase;margin:0}
+.pass .price{font-size:12px;font-weight:800;color:var(--accent);margin-top:7px}
+.pass p{font-size:11px;color:var(--muted);line-height:1.8;flex:1}
+.pass .btn{width:100%;padding:12px 8px;font-size:10px}
+.road{max-width:850px;margin:auto;position:relative}
+.road:before{content:"";position:absolute;left:12px;top:10px;bottom:10px;width:1px;background:linear-gradient(var(--accent),var(--line))}
+.road-item{position:relative;padding:0 0 25px 48px}
+.road-dot{position:absolute;left:5px;top:6px;width:15px;height:15px;border:2px solid var(--accent);background:var(--bg);border-radius:50%}
+.road-card{padding:20px 22px;background:var(--panel);border:1px solid var(--line)}
+.road-top{display:flex;justify-content:space-between;gap:15px;align-items:center}
+.road-top h3{font:700 22px "Barlow Condensed";text-transform:uppercase;margin:0}
+.status{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.road-bar{height:3px;background:#34372d;margin-top:15px}.road-bar i{display:block;height:100%;background:var(--accent)}
+.creator{display:grid;grid-template-columns:.8fr 1.2fr;gap:45px;padding:38px;background:#1a1e16;border:1px solid rgba(214,166,93,.2)}
+.creator h2{font:800 48px "Barlow Condensed";text-transform:uppercase;line-height:.95;margin:12px 0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.step{padding:18px;background:#11140f;border:1px solid var(--line)}
+.step b{font:700 30px "Barlow Condensed";color:var(--accent)}
+.step h3{font-size:12px;margin:8px 0 5px}.step p{font-size:10px;color:var(--muted);line-height:1.8;margin:0}
+.ref-box{margin-top:18px;padding:20px;background:#11140f;border:1px solid var(--line)}
+.ref-box label{display:block;font-size:10px;color:var(--muted);margin-bottom:10px}
+.ref-row{display:flex;gap:8px}.ref-row input{min-width:0;flex:1;background:#20231b;border:1px solid var(--line);color:var(--ink);padding:12px}
+.contacts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.contact{padding:20px;background:var(--panel);border:1px solid var(--line);transition:.2s}
+.contact:hover{border-color:var(--accent)}
+.contact span{font-size:22px}.contact b{display:block;font-size:12px;margin:12px 0 3px}.contact small{font-size:10px;color:var(--muted)}
+footer{padding:35px 0;border-top:1px solid var(--line);color:var(--dim);font-size:10px}
+.footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.hidden{display:none!important}
 
-.field-journal {
-    position: relative;
-    padding: 110px 0;
-    background: var(--bg2);
-    border-top: 1px solid var(--line);
-    overflow: hidden;
+/* FIELD JOURNAL STYLES */
+.journal-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.journal-card{position:relative;background:var(--panel);border:1px solid var(--line);overflow:hidden;min-height:280px;display:flex;flex-direction:column;justify-content:flex-end;transition:border-color .3s,transform .3s}
+.journal-card:hover{border-color:rgba(214,166,93,.6);transform:translateY(-4px)}
+.journal-card.col-6{grid-column:span 6}
+.journal-card.col-4{grid-column:span 4}
+.journal-img-wrap{position:absolute;inset:0;z-index:1;overflow:hidden}
+.journal-img-wrap img{width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .5s ease;filter:brightness(.85) contrast(1.05)}
+.journal-card:hover .journal-img-wrap img{transform:scale(1.06)}
+.journal-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(17,19,15,.2) 0%,rgba(17,19,15,.7) 60%,rgba(17,19,15,.95) 100%)}
+.journal-content{position:relative;z-index:3;padding:22px;display:flex;flex-direction:column;gap:6px}
+.journal-tag{display:inline-flex;align-items:center;gap:6px;font:800 10px monospace;color:var(--accent);letter-spacing:.15em;text-transform:uppercase}
+.journal-title{font:700 24px "Barlow Condensed",sans-serif;text-transform:uppercase;margin:0;line-height:1.1;color:var(--ink)}
+.journal-desc{font-size:12px;color:var(--muted);margin:4px 0 0;line-height:1.6}
+.journal-num{position:absolute;top:16px;right:16px;z-index:3;font:900 14px monospace;color:rgba(238,234,221,.4);background:rgba(17,19,15,.7);padding:3px 8px;border:1px solid var(--line)}
+
+@media(max-width:850px){
+ .navlinks{display:none}.hero-grid{grid-template-columns:1fr}.hero{padding:70px 0 55px;min-height:auto}.field-art{min-height:330px}
+ .goal-panel,.creator{grid-template-columns:1fr}.pass-grid{grid-template-columns:repeat(2,1fr)}.contacts{grid-template-columns:repeat(2,1fr)}
+ .journal-card.col-6,.journal-card.col-4{grid-column:span 12}
 }
-
-.field-journal > .wrap {
-    width: min(1180px, calc(100% - 40px));
-    margin-inline: auto;
-}
-
-.journal-header {
-    max-width: 700px;
-    margin-bottom: 42px;
-}
-
-.journal-label {
-    display: inline-block;
-    margin-bottom: 16px;
-    color: var(--amber);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-
-.journal-title {
-    margin: 0 0 18px;
-    color: var(--text);
-    font-size: clamp(30px, 5vw, 52px);
-    line-height: 1.15;
-}
-
-.journal-description {
-    color: var(--muted);
-    font-size: 16px;
-    line-height: 1.8;
-}
-
-.journal-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 20px;
-}
-
-.journal-card {
-    position: relative;
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: var(--bg);
-    transition: transform .3s ease, border-color .3s ease;
-}
-
-.journal-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--amber);
-}
-
-.journal-card img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    min-height: 250px;
-    object-fit: cover;
-    transition: transform .5s ease;
-}
-
-.journal-card:hover img {
-    transform: scale(1.04);
-}
-
-.journal-card::after {
-    content: "";
-    position: absolute;
-    inset: 30% 0 0;
-    background: linear-gradient(
-        to bottom,
-        transparent,
-        rgba(6, 7, 13, .95)
-    );
-    pointer-events: none;
-}
-
-.journal-caption {
-    position: absolute;
-    z-index: 2;
-    right: 24px;
-    bottom: 24px;
-    left: 24px;
-}
-
-.journal-number {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--amber);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-.journal-caption h3 {
-    margin: 0 0 8px;
-    color: #fff;
-    font-size: 21px;
-}
-
-.journal-caption p {
-    margin: 0;
-    color: rgba(255, 255, 255, .72);
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.journal-featured {
-    grid-row: span 2;
-}
-
-.journal-featured img {
-    min-height: 540px;
-}
-
-.journal-side {
-    min-height: 260px;
-}
-
-.journal-wide {
-    grid-column: 1 / -1;
-}
-
-.journal-wide img {
-    min-height: 320px;
-    max-height: 420px;
-}
-
-.journal-footer {
-    margin-top: 32px;
-    padding: 22px 26px;
-    border-left: 3px solid var(--amber);
-    border-radius: 0 12px 12px 0;
-    background: rgba(255, 176, 32, .06);
-    color: var(--muted);
-    line-height: 1.7;
-}
-
-.journal-footer strong {
-    color: var(--text);
-}
-
-/* Mobile */
-
-@media (max-width: 760px) {
-    .field-journal {
-        padding: 75px 0;
-    }
-
-    .journal-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .journal-featured {
-        grid-row: auto;
-    }
-
-    .journal-featured img {
-        min-height: 350px;
-    }
-
-    .journal-side img {
-        min-height: 260px;
-    }
-
-    .journal-wide {
-        grid-column: auto;
-    }
-
-    .journal-wide img {
-        min-height: 260px;
-    }
-
-    .journal-caption {
-        right: 18px;
-        bottom: 18px;
-        left: 18px;
-    }
+@media(max-width:600px){
+ .wrap{width:min(100% - 30px,var(--max))}.nav{height:64px}.nav .btn{padding:10px 12px;font-size:9px}
+ h1{font-size:76px}.hero-lead{font-size:14px}.field-art{min-height:280px}
+ .section{padding:68px 0}.section-head{display:block}.section-head p{margin-top:15px}
+ .about-grid{grid-template-columns:1fr}.alloc{grid-template-columns:repeat(2,1fr)}
+ .honor-grid,.reward-grid{grid-template-columns:1fr}.honor{min-height:150px}
+ .pass-grid{grid-template-columns:1fr 1fr}.pass{padding:15px;min-height:300px}.pass h3{font-size:20px}
+ .steps{grid-template-columns:1fr}.creator{padding:23px}.goal-panel{padding:23px}.timer{gap:5px}.timebox{min-width:0;flex:1;padding:9px 5px}
+ .ref-row{flex-direction:column}.ref-row .btn{width:100%}.contacts{grid-template-columns:1fr 1fr}
+ .journal-grid{grid-template-columns:1fr}
+ .journal-card.col-6,.journal-card.col-4{grid-column:span 1}
 }
 </style>
 </head>
 <body>
-<div class="bgfx"></div><div class="grid-bg"></div><div class="scan"></div>
-
-<div id="refBanner" class="hidden fixed top-[72px] inset-x-0 z-40 px-4">
-  <div class="mx-auto max-w-xl glass px-4 py-2 text-sm text-center" style="border-color:rgba(163,92,255,.6)">🎬 Ты пришёл по ссылке креатора <b class="glow-v" id="refName"></b>. Спасибо, что поддерживаешь проект!</div>
-</div>
-
-<header class="fixed top-0 inset-x-0 z-50" style="padding-top:env(safe-area-inset-top,0px)">
-  <div class="mx-auto max-w-6xl px-4 pt-3">
-    <div class="glass flex items-center justify-between px-4 py-2.5">
-      <a href="#top" class="disp font-extrabold tracking-tight text-sm sm:text-base" id="logo"></a>
-      <nav class="hidden md:flex gap-6 text-sm text-[color:var(--muted)]">
-        <a class="hover:text-white" href="#about">Об игре</a><a class="hover:text-white" href="#goal">Сбор</a><a class="hover:text-white" href="#honor">Награды</a><a class="hover:text-white" href="#passes">Пассы</a><a class="hover:text-white" href="#roadmap">Roadmap</a><a class="hover:text-white" href="#creators">Креаторам</a> 
-       <a class="hover:text-white" href="#field-journal">Разработка</a>
-      </nav>
-      <a href="#passes" class="btn !py-2 !px-4 text-sm">Поддержать</a>
-    </div>
-  </div>
+<header class="topbar">
+ <div class="wrap nav">
+  <a class="brand" href="#top"><span class="brand-mark"><span>F</span></span><span>FRONTLINE<span style="color:var(--accent)">.</span></span></a>
+  <nav class="navlinks"><a href="#game">ОБ ИГРЕ</a><a href="#progress">ПОДДЕРЖКА</a><a href="#field-journal">FIELD JOURNAL</a><a href="#honor">НАГРАДЫ</a><a href="#roadmap">РАЗРАБОТКА</a><a href="#creators">КРЕАТОРАМ</a></nav>
+  <a class="btn" href="#passes">Поддержать проект ↗</a>
+ </div>
 </header>
 
 <main id="top">
-<!-- HERO -->
-<section class="relative mx-auto max-w-6xl px-4 pt-32 pb-20 md:pt-44 text-center md:text-left overflow-hidden">
-  <svg class="absolute right-[-60px] md:right-4 top-24 w-[340px] md:w-[460px] opacity-25 md:opacity-60 pointer-events-none" viewBox="0 0 200 200" aria-hidden="true">
-    <g style="transform-origin:100px 100px;animation:spin 40s linear infinite"><circle cx="100" cy="100" r="92" fill="none" stroke="#39ff88" stroke-width="1.5" stroke-dasharray="3 9"/></g>
-    <g style="transform-origin:100px 100px;animation:spinr 26s linear infinite"><circle cx="100" cy="100" r="68" fill="none" stroke="#a35cff" stroke-width="2" stroke-dasharray="40 14"/></g>
-    <circle cx="100" cy="100" r="40" fill="none" stroke="#39ff88" stroke-width="1"/>
-    <path d="M100 4v46M100 150v46M4 100h46M150 100h46" stroke="#39ff88" stroke-width="2"/>
-    <circle cx="100" cy="100" r="3" fill="#ff4d6d"/>
-  </svg>
-  <div class="relative">
-    <p class="glass inline-flex items-center px-4 py-1.5 text-sm text-[color:var(--muted)] mb-6" style="border-radius:999px"><span class="inline-block w-2 h-2 rounded-full bg-[color:var(--green)] mr-2 animate-pulse"></span><span>Команда <b class="text-white" id="teamTop"></b> · этап сбора открыт</span></p>
-    <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.05] title-grad" id="heroTitle"></h1>
-    <p class="disp text-xl sm:text-3xl mt-4 font-medium">Фонд Развития и Продвижения</p>
-    <p class="max-w-2xl mt-6 text-[color:var(--muted)] text-base sm:text-lg leading-relaxed md:mx-0 mx-auto" id="heroSub"></p>
-    <div class="mt-9 flex flex-col sm:flex-row gap-3 md:justify-start justify-center">
-      <a href="#passes" class="btn text-lg">Поддержать проект</a>
-      <a href="#goal" class="btn violet text-lg">Шкала сбора</a>
-    </div>
+<section class="hero">
+ <div class="wrap hero-grid">
+  <div class="hero-copy">
+   <div class="kicker"><i class="live-dot"></i> НЕЗАВИСИМАЯ РАЗРАБОТКА · 2026</div>
+   <h1 class="display">THE<br><span>FRONTLINE</span></h1>
+   <p class="hero-lead">Мы строим Tower Defense, в котором хочется остаться ещё на одну волну. Небольшая команда, большая идея и много работы за кадром. Это наш путь — и ты можешь стать его частью.</p>
+   <div class="hero-actions"><a class="btn" href="#game">Узнать об игре <span>↓</span></a><a class="btn outline" href="#progress">Следить за прогрессом</a></div>
+   <div class="hero-note"><span><b>01</b> ИДЕЯ</span><span><b>02</b> РАЗРАБОТКА</span><span><b>03</b> ПЕРВЫЙ РЕЛИЗ</span></div>
   </div>
-  <div class="relative mt-14 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl md:mx-0 mx-auto" id="alloc"></div>
-</section>
-
-<!-- ABOUT -->
-<section id="about" class="mx-auto max-w-6xl px-4 py-16">
-  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Про игру</h2>
-  <p class="text-center text-[color:var(--muted)] mt-4 max-w-3xl mx-auto leading-relaxed rv" id="aboutText"></p>
-  <div id="features" class="grid md:grid-cols-3 gap-4 mt-10"></div>
-  <p class="text-center text-sm text-[color:var(--muted)] mt-6 rv" id="nameNote"></p>
-</section>
-
-<!-- GOAL -->
-<section id="goal" class="mx-auto max-w-4xl px-4 py-16">
-  <div class="glass hud p-6 sm:p-10 rv">
-    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-      <div>
-        <h2 class="disp text-2xl sm:text-3xl font-extrabold">Цель этапа</h2>
-        <p class="text-[color:var(--muted)] mt-2">Собрано: <b class="glow-g text-xl" id="raised">0</b> R$ из <b id="goalAmt">0</b> R$</p>
-      </div>
-      <div class="disp text-5xl sm:text-6xl font-extrabold glow-g" id="pct">0%</div>
-    </div>
-    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar" aria-label="Прогресс сбора"><div class="fill" id="fill"></div></div>
-    <div class="flex justify-between text-xs text-[color:var(--muted)] mt-2"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
-    <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center" aria-label="Время до конца этапа">
-      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="d">00</div><div class="text-xs text-[color:var(--muted)]">дней</div></div>
-      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="h">00</div><div class="text-xs text-[color:var(--muted)]">часов</div></div>
-      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="m">00</div><div class="text-xs text-[color:var(--muted)]">минут</div></div>
-      <div class="glass p-3"><div class="disp text-2xl glow-v" data-t="s">00</div><div class="text-xs text-[color:var(--muted)]">секунд</div></div>
-    </div>
-    <p class="text-center text-sm text-[color:var(--muted)] mt-4">До конца этапа сбора</p>
+  <div class="field-art" aria-label="Атмосферная иллюстрация поля боя">
+   <div class="art-label">FRONTLINE / FIELD REPORT</div><div class="art-coord">SECTOR 04<br>51° 08' N / 71° 25' E</div>
+   <div class="ridge back"></div><div class="beam"></div><div class="tower"></div><div class="ridge"></div>
+   <div class="art-bottom"><div><strong>HOLD THE LINE.</strong><small>EVERY WAVE MATTERS.</small></div><small>PROJECT FILE · 001</small></div>
   </div>
+ </div>
 </section>
 
-<!-- HONOR -->
-<section id="honor" class="mx-auto max-w-6xl px-4 py-16">
-  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Доска почёта</h2>
-  <p class="text-center text-[color:var(--muted)] mt-3 rv">Топ-3 донатера <span id="periodLbl">недели</span></p>
-  <div class="flex justify-center gap-2 mt-5 rv">
-    <button class="tab" data-p="week" aria-pressed="true">Неделя</button>
-    <button class="tab" data-p="month" aria-pressed="false">Месяц</button>
+<section class="section" id="game">
+ <div class="wrap">
+  <div class="section-head"><div><div class="eyebrow">01 / НАША ИДЕЯ</div><h2 class="display">НЕ ПРОСТО<br>ЕЩЁ ОДНА ВОЛНА.</h2></div><p>Мы не хотим продавать тебе мечту на красивом лендинге. Лучше покажем, что именно пытаемся создать и как движемся к этому.</p></div>
+  <div class="about-grid">
+   <article class="about-main"><div class="eyebrow">TOWER DEFENSE · ROBLOX</div><h3>ОКАЖИСЬ<br>ВНУТРИ БОЯ</h3><p>FrontLine — Tower Defense с необычным взглядом на поле боя. Ты не просто смотришь на расстановку башен со стороны: мы хотим дать игроку почувствовать себя частью обороны. Наша задача — сделать каждую волну напряжённой, а победу заслуженной.</p></article>
+   <div class="feature-list">
+    <article class="feature"><div class="feature-num">01</div><div><h3>Башни и тактика</h3><p>Подбирай оборону, экспериментируй с сочетаниями и ищи свой способ пережить волну.</p></div></article>
+    <article class="feature"><div class="feature-num">02</div><div><h3>Прогресс игрока</h3><p>Новые башни, скины и цели, ради которых хочется возвращаться.</p></div></article>
+    <article class="feature"><div class="feature-num">03</div><div><h3>Соревнование</h3><p>Таблица лидеров и признание тех, кто показывает лучший результат.</p></div></article>
+   </div>
   </div>
-  <div id="top3" class="grid md:grid-cols-3 gap-4 mt-8 items-end"></div>
-
-  <h3 class="disp text-xl sm:text-3xl font-extrabold text-center mt-20 rv">Эксклюзивные награды за донат</h3>
-  <div id="rewards" class="grid md:grid-cols-3 gap-4 mt-8"></div>
+ </div>
 </section>
 
-<!-- PASSES -->
-<section id="passes" class="mx-auto max-w-6xl px-4 py-16">
-  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Игровые пассы</h2>
-  <p class="text-center text-[color:var(--muted)] mt-3 max-w-xl mx-auto rv">Выбери пасс на roblox.com — Робуксы пойдут в фонд, а награда придёт тебе в игре.</p>
-  <div id="passGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-10"></div>
+<section class="section" id="progress">
+ <div class="wrap">
+  <div class="section-head"><div><div class="eyebrow">02 / ПОДДЕРЖКА ПРОЕКТА</div><h2 class="display">ПОМОГИ НАМ<br>ДВИГАТЬСЯ ДАЛЬШЕ.</h2></div><p>Поддержка помогает оплачивать продвижение, создавать модели и развивать игру. Мы хотим открыто показывать цель и не скрывать, на каком мы этапе.</p></div>
+  <div class="goal-panel">
+   <div class="goal-side"><div class="eyebrow">ТЕКУЩАЯ ЦЕЛЬ</div><div class="goal-number" id="goalAmount">50 000 R$</div><p>Это ориентир для следующего этапа работы над FrontLine. Спасибо каждому, кто помогает нам приблизиться к нему.</p><div class="timer"><div class="timebox"><b data-t="d">00</b><span>дней</span></div><div class="timebox"><b data-t="h">00</b><span>часов</span></div><div class="timebox"><b data-t="m">00</b><span>минут</span></div><div class="timebox"><b data-t="s">00</b><span>секунд</span></div></div></div>
+   <div class="progress-wrap"><div class="progress-meta"><span>Собрано на этом этапе</span><strong><span id="raised">0</span> / 50 000 R$</strong></div><div class="progress"><div class="progress-fill" id="fill"></div></div><div class="tickmarks"><span>0</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><div class="alloc">
+    <div class="alloc-item"><strong>35%</strong><span>Продвижение<br>и реклама</span></div><div class="alloc-item"><strong>30%</strong><span>3D-модели<br>и билдинг</span></div><div class="alloc-item"><strong>25%</strong><span>Разработка<br>механик</span></div><div class="alloc-item"><strong>10%</strong><span>Призы<br>и конкурсы</span></div>
+   </div><p class="small muted" style="margin:15px 0 0">Распределение — план команды, а не финансовый отчёт. Фактические расходы могут меняться.</p></div>
+  </div>
+ </div>
 </section>
 
-<!-- ROADMAP -->
-<section id="roadmap" class="mx-auto max-w-3xl px-4 py-16">
-  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Дорожная карта</h2>
-  <p class="text-center text-[color:var(--muted)] mt-3 rv">Открыто показываем, на каком этапе разработка.</p>
-  <div id="road" class="mt-10 space-y-5"></div>
-</section>
-
-<!-- CREATORS -->
-<section id="creators" class="mx-auto max-w-5xl px-4 py-16">
-  <div class="glass hud p-6 sm:p-10 rv" style="background:linear-gradient(135deg,rgba(163,92,255,.16),rgba(57,255,136,.08))">
-    <h2 class="disp text-2xl sm:text-4xl font-extrabold">Контент-мейкерам</h2>
-    <p class="text-[color:var(--muted)] mt-3 max-w-2xl" id="crIntro"></p>
-    <ol id="crSteps" class="grid md:grid-cols-3 gap-4 mt-8"></ol>
-    <div class="glass p-5 mt-8">
-      <h3 class="font-semibold">Твоя реферальная ссылка</h3>
-      <p class="text-sm text-[color:var(--muted)] mt-1">Введи свой ник — получишь ссылку. Все, кто придёт по ней, увидят, что их позвал именно ты.</p>
-      <div class="flex flex-col sm:flex-row gap-3 mt-4">
-        <input id="refInput" class="inp" maxlength="24" placeholder="Твой ник (латиница, цифры)" autocomplete="off">
-        <button id="refMake" class="btn violet shrink-0">Создать ссылку</button>
-      </div>
-      <div id="refOut" class="hidden mt-4 flex flex-col sm:flex-row gap-3 items-stretch">
-        <input id="refLink" class="inp" readonly>
-        <button id="refCopy" class="btn shrink-0">Скопировать</button>
-      </div>
+<section class="section" id="field-journal">
+ <div class="wrap">
+  <div class="section-head">
+   <div>
+    <div class="eyebrow">03 / ДНЕВНИК РАЗРАБОТКИ</div>
+    <h2 class="display">FIELD JOURNAL</h2>
+   </div>
+   <p>Материалы, скриншоты и наработки из рабочей среды. Смотри, как проект обретает форму шаг за шагом.</p>
+  </div>
+  <div class="journal-grid">
+   <article class="journal-card col-6">
+    <div class="journal-num">#01</div>
+    <div class="journal-img-wrap">
+     <img src="img/game-icon.png" alt="Иконка игры FrontLine" loading="lazy">
     </div>
+    <div class="journal-overlay"></div>
+    <div class="journal-content">
+     <div class="journal-tag">✦ ИДЕНТИКА ПРОЕКТА</div>
+     <h3 class="journal-title">Официальный логотип FrontLine</h3>
+     <p class="journal-desc">Главное визуальное лицо игры. Строгий стиль, передающий атмосферу бескомпромиссной обороны.</p>
+    </div>
+   </article>
+
+   <article class="journal-card col-6">
+    <div class="journal-num">#02</div>
+    <div class="journal-img-wrap">
+     <img src="img/boss-axe.png" alt="Босс с топором на Baseplate" loading="lazy">
+    </div>
+    <div class="journal-overlay"></div>
+    <div class="journal-content">
+     <div class="journal-tag">⚔ ВРАГИ И БОССЫ</div>
+     <h3 class="journal-title">Тестирование тяжелых противников</h3>
+     <p class="journal-desc">Отработка 3D-модели босса с топором на тестовой арене Baseplate. Проверка анимации и хитбоксов.</p>
+    </div>
+   </article>
+
+   <article class="journal-card col-4">
+    <div class="journal-num">#03</div>
+    <div class="journal-img-wrap">
+     <img src="img/lobby-map.png" alt="Вид сверху на карту лобби" loading="lazy">
+    </div>
+    <div class="journal-overlay"></div>
+    <div class="journal-content">
+     <div class="journal-tag">🏛 ЛОКАЦИИ</div>
+     <h3 class="journal-title">План игрового лобби</h3>
+     <p class="journal-desc">Вид сверху на карту хаба: зонирование пространств, места для выбора режимов и подготовки перед боем.</p>
+    </div>
+   </article>
+
+   <article class="journal-card col-4">
+    <div class="journal-num">#04</div>
+    <div class="journal-img-wrap">
+     <img src="img/combat-art.png" alt="Арт юнита, ведающего огонь" loading="lazy">
+    </div>
+    <div class="journal-overlay"></div>
+    <div class="journal-content">
+     <div class="journal-tag">🎨 КОНЦЕПТ-АРТ</div>
+     <h3 class="journal-title">Боевое перекрестье</h3>
+     <p class="journal-desc">Художественный концепт стрелка во время выполнения боевой задачи. Вдохновение для спецэффектов.</p>
+    </div>
+   </article>
+
+   <article class="journal-card col-4">
+    <div class="journal-num">#05</div>
+    <div class="journal-img-wrap">
+     <img src="img/unit-placement.png" alt="Установка юнита на карте" loading="lazy">
+    </div>
+    <div class="journal-overlay"></div>
+    <div class="journal-content">
+     <div class="journal-tag">🎮 ГЕЙМПЛЕЙ</div>
+     <h3 class="journal-title">Размещение обороны</h3>
+     <p class="journal-desc">Интерфейс расстановки юнитов на маршруте движения волны противников во время тестового раунда.</p>
+    </div>
+   </article>
   </div>
+ </div>
 </section>
 
-<!-- CONTACTS -->
-<section id="contacts" class="mx-auto max-w-5xl px-4 py-16">
-  <h2 class="disp text-2xl sm:text-4xl font-extrabold text-center rv">Связь и сообщество</h2>
-  <div id="links" class="grid sm:grid-cols-2 gap-4 mt-8"></div>
+<section class="section" id="honor">
+ <div class="wrap">
+  <div class="section-head"><div><div class="eyebrow">04 / СООБЩЕСТВО</div><h2 class="display">ТЕ, КТО<br>С НАМИ.</h2></div><p>За каждым небольшим проектом стоят люди. Здесь будут отмечены те, кто помогает FrontLine расти.</p></div>
+  <div class="periods"><button class="period active" data-period="week">Неделя</button><button class="period" data-period="month">Месяц</button></div>
+  <div class="honor-grid" id="top3"></div>
+  <div style="margin-top:72px"><div class="eyebrow">ЗНАКИ БЛАГОДАРНОСТИ</div><h2 class="display" style="font-size:48px;margin:10px 0 25px">ТВОЯ ПОДДЕРЖКА ОСТАНЕТСЯ В ИСТОРИИ.</h2>
+   <div class="reward-grid" id="rewards"></div>
+  </div>
+ </div>
+</section>
+
+<section class="section" id="passes">
+ <div class="wrap">
+  <div class="section-head"><div><div class="eyebrow">05 / ПОДДЕРЖАТЬ</div><h2 class="display">СТАНЬ ЧАСТЬЮ<br>ИСТОРИИ.</h2></div><p>Выбери удобный вариант. Каждый вклад — это поддержка независимой команды и ещё один шаг к игре, которую мы хотим выпустить.</p></div>
+  <div class="pass-grid" id="passGrid"></div>
+  <p class="small muted" style="margin-top:18px">Покупка проходит на стороне Roblox. Перед покупкой проверь цену и описание Game Pass на странице Roblox.</p>
+ </div>
+</section>
+
+<section class="section" id="roadmap">
+ <div class="wrap">
+  <div class="section-head"><div><div class="eyebrow">06 / ЗА КАДРОМ</div><h2 class="display">РАБОТА<br>НЕ ОСТАНАВЛИВАЕТСЯ.</h2></div><p>Планы могут меняться — разработка редко идёт идеально по прямой. Здесь мы показываем текущее состояние основных этапов.</p></div>
+  <div class="road" id="road"></div>
+ </div>
+</section>
+
+<section class="section" id="creators">
+ <div class="wrap">
+  <div class="creator">
+   <div><div class="eyebrow">07 / ДЛЯ КРЕАТОРОВ</div><h2>РАССКАЖИ<br>О FRONTLINE.</h2><p class="muted small">Снимаешь Roblox-контент? Нам будет приятно, если ты покажешь своей аудитории наш проект. Не нужны миллионы просмотров — важнее интерес к игре и искренность.</p></div>
+   <div><div class="steps"><article class="step"><b>01</b><h3>Сними видео</h3><p>Покажи идею игры, расскажи о разработке или поделись ожиданиями.</p></article><article class="step"><b>02</b><h3>Опубликуй</h3><p>YouTube Shorts, TikTok или Reels — выбирай площадку, где тебе удобно.</p></article><article class="step"><b>03</b><h3>Напиши нам</h3><p>Отправь ссылку на ролик. Обсудим возможное сотрудничество.</p></article></div>
+    <div class="ref-box"><label for="refInput">ТВОЯ РЕФЕРАЛЬНАЯ ССЫЛКА</label><div class="ref-row"><input id="refInput" maxlength="24" placeholder="Твой ник (латиница и цифры)"><button class="btn" id="refMake">Создать ссылку</button></div><div class="ref-row hidden" id="refOut" style="margin-top:9px"><input id="refLink" readonly><button class="btn outline" id="refCopy">Скопировать</button></div><p class="small muted" style="margin:10px 0 0">Ссылка поможет понять, от кого новые люди узнали о проекте. Она не отслеживает личные данные посетителей.</p></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="section" id="contacts">
+ <div class="wrap">
+  <div class="section-head"><div><div class="eyebrow">08 / НА СВЯЗИ</div><h2 class="display">УВИДИМСЯ<br>НА ФРОНТЕ.</h2></div><p>Следи за новостями, задавай вопросы и знакомься с сообществом. Будем рады видеть тебя рядом.</p></div>
+  <div class="contacts" id="links"></div>
+ </div>
 </section>
 </main>
 
-<footer class="text-center text-sm text-[color:var(--muted)] py-10 px-4">
-  <span id="foot"></span><br>Проект не связан с Roblox Corporation. Пассы покупаются на официальном сайте roblox.com.
-</footer>
+<footer><div class="wrap footer-row"><span>© 2026 FRONTLINE · НЕЗАВИСИМАЯ КОМАНДА РАЗРАБОТЧИКОВ</span><span>СДЕЛАНО С УПОРСТВОМ. НЕ БЕЗ ПОМОЩИ.</span></div><div class="wrap small" style="margin-top:12px">FrontLine — независимый проект, не связанный с Roblox Corporation. Roblox и Robux являются товарными знаками Roblox Corporation.</div></footer>
 
 <script>
-/* ==========================================================
-   КОНФИГ — ВСЁ, ЧТО НУЖНО МЕНЯТЬ, НАХОДИТСЯ ЗДЕСЬ
-   ========================================================== */
-const CFG = {
-  /* --- Игра и команда --- */
-  title1: 'TowerDefens',
-  title2: 'FrontLine',
-  team: 'God1s Work1s',
-  heroSub: 'Каждый Робукс идёт прямо в проект: на маркетинг, 3D-модели, работу скриптеров и рекламу в TikTok и YouTube Shorts. Чем больше соберём, тем быстрее выпустим игру и тем больше игроков о ней узнают.',
-  about: 'Уникальный Tower Defense, где ты управляешь башнями от первого лица. Получай скины и новые башни, попадай в таблицу лидеров — за место в ней в игре дают бонусы.',
-  nameNote: 'FrontLine («Линия фронта») — это просто название игры.',
-  features: [
-    {i:'🎯', t:'Башни от первого лица', d:'Не просто расставляй башни — встань за прицел и сам отбивай волны.'},
-    {i:'🎨', t:'Скины и башни', d:'Открывай новые башни и скины за прогресс и поддержку проекта.'},
-    {i:'🏆', t:'Таблица лидеров', d:'Лучшие игроки попадают в рейтинг и получают бонусы в игре.'}
-  ],
-
-  /* --- Сбор --- */
-  raised: 0,                         // сколько собрано сейчас (R$)
-  goal: 50000,                       // цель (R$)
-  deadline: '2026-12-01T23:59:59',   // конец этапа сбора
-  allocation: [                      // на что идут средства (проценты — просто текст, поправь под себя)
-    {p:'35%', t:'на маркетинг и рекламу', c:'g'},
-    {p:'30%', t:'на 3D-модели и билдинг', c:'v'},
-    {p:'25%', t:'на скриптеров', c:'g'},
-    {p:'10%', t:'на призы и конкурсы', c:'v'}
-  ],
-
-  /* --- Ссылки и контакты --- */
-  discordUrl: 'https://discord.gg/Bws2Jg89dU',
-  telegramUrl: 'https://t.me/TowerDefensF',
-  ownerTg: 'grease11123',            // без @
-  ownerDs: 'mmr1337',
-
-  /* --- ГЕЙМПАССЫ ---
-     Чтобы добавить новый, просто допиши ещё одну строку в список.
-     Обязательно: price и url. Остальное необязательно (name, desc, icon).
-     Пример:  {price:2000, url:'https://roblox.com/game-pass/ID/', name:'Мега-пасс', icon:'🔥', desc:'Описание'}   */
-  sortPassesByPrice: true,
-  passes: [
-    {price:50,   url:'https://roblox.com/game-pass/2046122592/', name:'Пакет Новичка',     icon:'🎒', desc:'Первый шаг в команду: ты в списке поддержавших и получаешь роль в Discord.'},
-    {price:500,  url:'https://roblox.com/game-pass/2063757915/', name:'Спонсор Проекта',   icon:'🛡️', desc:'Ранний доступ к ЗБТ и бейдж «Инвестор».'},
-    {price:750,  url:'https://roblox.com/game-pass/2064121444/', name:'Командир Фронта',   icon:'⚔️', desc:'Расширенная поддержка: вклад в рекламу и модели, особая роль в команде.'},
-    {price:1000, url:'https://roblox.com/game-pass/2063807698',  name:'Легендарный Вклад', icon:'👑', desc:'Уникальный скин или предмет и доступ в закрытый чат разработчиков.'}
-  ],
-
-  /* --- Топ донатеров (пока пусто — места покажутся свободными).
-     Пример строки: {n:'Ник', v:1200} --- */
-  top: { week: [], month: [] },
-
-  /* --- Награды --- */
-  rewards: [
-    {min:'100 R$',   t:'Роль и кредиты',  i:'🎖️', d:'Уникальная роль на Discord-сервере + ник в кредитах игры.'},
-    {min:'500 R$',   t:'Ранний доступ',   i:'🔑', d:'Ранний доступ к ЗБТ (закрытому бета-тесту) + бейдж «Инвестор».'},
-    {min:'1000+ R$', t:'Легенда проекта', i:'💎', d:'Уникальный внутриигровой скин или предмет + доступ в закрытый чат разработчиков.'}
-  ],
-
-  /* --- Дорожная карта (p — процент готовности) --- */
-  road: [
-    {t:'Волна 1 · Билдинг карт',        p:80, s:'В работе'},
-    {t:'Волна 2 · Скриптинг механик',   p:50, s:'В работе'},
-    {t:'Волна 3 · Запуск маркетинга',   p:20, s:'Стартовал'},
-    {t:'Волна 4 · Закрытый бета-тест',  p:0,  s:'Скоро'},
-    {t:'Волна 5 · Релиз',               p:0,  s:'Планируется'}
-  ],
-
-  /* --- Креаторам --- */
-  crIntro: 'Снимай по одному видео в день про проект и фонд — получай бонусы и процент с поддержки, пришедшей по твоей ссылке.',
-  crSteps: [
-    {t:'Сними ролик',            d:'15–45 секунд: геймплей, обзор башен или рассказ о фонде. Добавь хэштег #TowerDefensFrontLine.'},
-    {t:'Выложи на свой аккаунт', d:'TikTok, YouTube Shorts или Reels. Один ролик в день, минимум 7 дней подряд.'},
-    {t:'Пришли ссылки и получи бонус', d:'Напиши владельцу в Telegram или Discord, приложи ссылки на ролики и свою реф-ссылку — получишь роль «Медиа» и процент.'}
-  ]
+const CFG={
+ raised:0,goal:50000,deadline:'2026-12-01T23:59:59',
+ passes:[
+  {price:50,url:'https://roblox.com/game-pass/2046122592/',name:'Первый шаг',icon:'✳',desc:'Небольшой вклад в разработку и особая роль благодарности в нашем сообществе.'},
+  {price:500,url:'https://roblox.com/game-pass/2063757915/',name:'Первопроходец',icon:'⌁',desc:'Приглашение на закрытый тест, если он будет доступен, и бейдж «Первопроходец».'},
+  {price:750,url:'https://roblox.com/game-pass/2064121444/',name:'Опора команды',icon:'▰',desc:'Особая роль сообщества и имя в расширенном списке благодарности проекта.'},
+  {price:1000,url:'https://roblox.com/game-pass/2063807698',name:'Основатель FrontLine',icon:'✦',desc:'Эксклюзивный титул «Основатель» в игре и памятное упоминание на стене благодарности проекта.'}
+ ],
+ rewards:[
+  {min:'100 R$',title:'Спасибо от команды',icon:'✉',desc:'Особая роль сообщества и имя в списке тех, кто помог проекту на раннем этапе.'},
+  {min:'500 R$',title:'Первопроходец',icon:'⌁',desc:'Приглашение на закрытый тест, если он будет доступен, и внутриигровой бейдж «Первопроходец».'},
+  {min:'1000+ R$',title:'Основатель FrontLine',icon:'✦',desc:'Эксклюзивный титул «Основатель» в игре и памятное упоминание на стене благодарности проекта.'}
+ ],
+ top:{week:[],month:[]},
+ road:[
+  {title:'Билдинг карт',p:80,status:'В работе'},
+  {title:'Скриптинг механик',p:50,status:'В работе'},
+  {title:'Запуск маркетинга',p:20,status:'Стартовал'},
+  {title:'Закрытый бета-тест',p:0,status:'Скоро'},
+  {title:'Релиз',p:0,status:'Планируется'}
+ ],
+ discordUrl:'https://discord.gg/Bws2Jg89dU',
+ telegramUrl:'https://t.me/TowerDefensF',
+ ownerTg:'grease11123',ownerDs:'mmr1337'
 };
-/* ===================== КОНЕЦ КОНФИГА ===================== */
-
-const $ = s => document.querySelector(s);
-const fmt = n => Number(n).toLocaleString('ru-RU').replace(/\u00a0/g,' ');
-const robux = (sz=18) => `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5l9 5.2v10.6l-9 5.2-9-5.2V6.7z" fill="none" stroke="#39ff88" stroke-width="2"/><rect x="8" y="8" width="8" height="8" rx="1" fill="#39ff88"/></svg>`;
-const avatar = (c1,c2,ghost) => `<svg viewBox="0 0 64 64" class="w-20 h-20 mx-auto" aria-hidden="true" style="${ghost?'opacity:.35':''}"><rect width="64" height="64" rx="16" fill="${c1}" opacity=".25"/><rect x="20" y="8" width="24" height="24" rx="4" fill="${c2}"/><rect x="24" y="16" width="4" height="5" fill="#111"/><rect x="36" y="16" width="4" height="5" fill="#111"/><rect x="26" y="25" width="12" height="2" rx="1" fill="#111"/><rect x="14" y="34" width="36" height="22" rx="4" fill="${c1}"/><rect x="8" y="34" width="6" height="18" rx="3" fill="${c2}"/><rect x="50" y="34" width="6" height="18" rx="3" fill="${c2}"/></svg>`;
-const copy = async (text, btn, ok='Скопировано ✓') => {
-  try{ await navigator.clipboard.writeText(text); }catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand('copy')}catch(_){} t.remove(); }
-  if(btn){ const o=btn.textContent; btn.textContent=ok; setTimeout(()=>btn.textContent=o,1600); }
-};
-
-/* ---- Тексты ---- */
-document.title = `${CFG.title1}:${CFG.title2} — Фонд Развития и Продвижения`;
-$('#logo').innerHTML = `${CFG.title1.toUpperCase()}<span class="glow-g">:${CFG.title2.toUpperCase()}</span>`;
-$('#heroTitle').innerHTML = `${CFG.title1}<br class="sm:hidden">:${CFG.title2}`;
-$('#teamTop').textContent = CFG.team;
-$('#heroSub').textContent = CFG.heroSub;
-$('#aboutText').textContent = CFG.about;
-$('#nameNote').textContent = CFG.nameNote;
-$('#crIntro').textContent = CFG.crIntro;
-$('#foot').textContent = `© 2026 ${CFG.title1}:${CFG.title2} · команда ${CFG.team}`;
-$('#alloc').innerHTML = CFG.allocation.map(a=>`<div class="glass hud p-4"><div class="disp text-2xl ${a.c==='v'?'glow-v':'glow-g'}">${a.p}</div><div class="text-xs text-[color:var(--muted)] mt-1">${a.t}</div></div>`).join('');
-$('#features').innerHTML = CFG.features.map((f,i)=>`<div class="glass hud lift p-6 rv" style="transition-delay:${i*90}ms"><div class="text-4xl">${f.i}</div><h3 class="font-semibold text-lg mt-3">${f.t}</h3><p class="text-sm text-[color:var(--muted)] mt-2 leading-relaxed">${f.d}</p></div>`).join('');
-$('#crSteps').innerHTML = CFG.crSteps.map((s,i)=>`<li class="glass p-5"><div class="disp text-3xl ${i%2?'glow-v':'glow-g'}">${i+1}</div><p class="font-semibold mt-2">${s.t}</p><p class="text-sm text-[color:var(--muted)] mt-1">${s.d}</p></li>`).join('');
-
-/* ---- Контакты ---- */
-$('#links').innerHTML = `
-  <a class="glass hud lift p-5 flex items-center gap-4 rv" href="${CFG.discordUrl}" target="_blank" rel="noopener"><span class="text-3xl">💬</span><span><b>Discord-сервер игры</b><br><span class="text-sm text-[color:var(--muted)]">Новости, роли, общение с командой</span></span></a>
-  <a class="glass hud lift p-5 flex items-center gap-4 rv" href="${CFG.telegramUrl}" target="_blank" rel="noopener"><span class="text-3xl">📣</span><span><b>Telegram-канал игры</b><br><span class="text-sm text-[color:var(--muted)]">Анонсы и обновления проекта</span></span></a>
-  <a class="glass hud lift p-5 flex items-center gap-4 rv" href="https://t.me/${CFG.ownerTg}" target="_blank" rel="noopener"><span class="text-3xl">✈️</span><span><b>Владелец в Telegram</b><br><span class="text-sm glow-g">@${CFG.ownerTg}</span></span></a>
-  <button class="glass hud lift p-5 flex items-center gap-4 rv text-left w-full" id="dsCopy" type="button"><span class="text-3xl">🎮</span><span><b>Владелец в Discord</b><br><span class="text-sm glow-v" id="dsTxt">${CFG.ownerDs}</span> <span class="text-xs text-[color:var(--muted)]">· нажми, чтобы скопировать</span></span></button>`;
-$('#dsCopy').addEventListener('click',()=>copy(CFG.ownerDs,$('#dsTxt'),'Ник скопирован ✓'));
-
-/* ---- Шкала сбора ---- */
-$('#goalAmt').textContent = fmt(CFG.goal);
-const pctVal = Math.min(100, Math.round(CFG.raised / CFG.goal * 100));
-$('#bar').setAttribute('aria-valuenow', pctVal);
-function countUp(el,to,suffix='',dur=2000,f=x=>x){ const t0=performance.now(); (function step(t){ const k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3); el.textContent=f(Math.round(to*e))+suffix; if(k<1) requestAnimationFrame(step); })(t0); }
-new IntersectionObserver((e,o)=>{ if(e[0].isIntersecting){
-  const w = CFG.raised>0 ? Math.max(pctVal,3) : 0;
-  $('#fill').style.width = w+'%'; if(!w) $('#fill').style.animation='none';
-  countUp($('#raised'),CFG.raised,'',2000,fmt); countUp($('#pct'),pctVal,'%'); o.disconnect(); } },{threshold:.4}).observe($('#goal'));
-
-/* ---- Таймер ---- */
-(function tick(){
-  const d = Math.max(0,new Date(CFG.deadline)-new Date())/1000;
-  const v = {d:Math.floor(d/86400),h:Math.floor(d%86400/3600),m:Math.floor(d%3600/60),s:Math.floor(d%60)};
-  for(const k in v) document.querySelector(`[data-t=${k}]`).textContent = String(v[k]).padStart(2,'0');
-  setTimeout(tick,1000);
-})();
-
-/* ---- Топ донатеров ---- */
-const medals = [
-  {l:'Золото',  c:'#ffd166', c2:'#ff9f1c', h:'md:pt-8', order:'md:order-2', ico:'🥇'},
-  {l:'Серебро', c:'#cfd6e6', c2:'#8f9bb5', h:'',        order:'md:order-1', ico:'🥈'},
-  {l:'Бронза',  c:'#e0915a', c2:'#a65a2a', h:'',        order:'md:order-3', ico:'🥉'}
-];
-function renderTop(p){
-  const list = CFG.top[p] || [];
-  $('#top3').innerHTML = medals.map((m,i)=>{ const u=list[i]; return `
-  <div class="glass hud lift p-6 text-center ${m.order} ${m.h}" style="border-color:${m.c}66;box-shadow:0 0 30px -12px ${m.c}">
-    <div class="text-3xl">${m.ico}</div>
-    ${avatar(m.c2,m.c,!u)}
-    <div class="font-semibold mt-3 truncate">${u?u.n:'Место свободно'}</div>
-    <div class="text-xs mb-2" style="color:${m.c}">${m.l}</div>
-    ${u?`<div class="disp font-extrabold text-xl flex items-center justify-center gap-1.5">${robux(20)}${fmt(u.v)}</div>`:`<div class="text-sm text-[color:var(--muted)]">Стань первым в этом месте</div>`}
-  </div>`}).join('');
+const $=s=>document.querySelector(s);
+const fmt=n=>Number(n).toLocaleString('ru-RU').replace(/\u00a0/g,' ');
+$('#goalAmount').textContent=fmt(CFG.goal)+' R$';
+$('#raised').textContent=fmt(CFG.raised);
+const pct=Math.min(100,Math.round(CFG.raised/CFG.goal*100));
+requestAnimationFrame(()=>$('#fill').style.width=pct+'%');
+function tick(){
+ const seconds=Math.max(0,(new Date(CFG.deadline)-new Date())/1000);
+ const values={d:Math.floor(seconds/86400),h:Math.floor(seconds%86400/3600),m:Math.floor(seconds%3600/60),s:Math.floor(seconds%60)};
+ Object.entries(values).forEach(([k,v])=>{const el=document.querySelector(`[data-t="${k}"]`);if(el)el.textContent=String(v).padStart(2,'0')});
+}
+tick();setInterval(tick,1000);
+function renderTop(period){
+ const list=CFG.top[period]||[];
+ const medals=['Ⅰ','Ⅱ','Ⅲ'];
+ const names=['Первое место','Второе место','Третье место'];
+ $('#top3').innerHTML=medals.map((m,i)=>`<article class="honor"><div class="medal">${m}</div><h3>${list[i]?list[i].n:names[i]}</h3><p>${list[i]?fmt(list[i].v)+' R$':'Место пока свободно'}</p></article>`).join('');
 }
 renderTop('week');
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  $('#periodLbl').textContent = b.dataset.p==='week'?'недели':'месяца';
-  renderTop(b.dataset.p);
+document.querySelectorAll('.period').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.period').forEach(x=>x.classList.toggle('active',x===b));renderTop(b.dataset.period);
 }));
-
-/* ---- Награды ---- */
-$('#rewards').innerHTML = CFG.rewards.map((r,i)=>`
-  <div class="glass hud lift p-6 rv" style="transition-delay:${i*90}ms">
-    <div class="text-4xl">${r.i}</div>
-    <div class="disp text-2xl font-extrabold mt-4 ${i==1?'glow-v':'glow-g'}">${r.min}</div>
-    <div class="font-semibold mt-1">${r.t}</div>
-    <p class="text-sm text-[color:var(--muted)] mt-2 leading-relaxed">${r.d}</p>
-  </div>`).join('');
-
-/* ---- Геймпассы ---- */
-const palette = [['#14c75f','#39ff88'],['#6d28ff','#a35cff'],['#ff9f1c','#ffd166'],['#00b4ff','#7bdcff'],['#ff4d6d','#ff9aae'],['#00c2a8','#6ff2dc']];
-let passes = CFG.passes.slice(); if(CFG.sortPassesByPrice) passes.sort((a,b)=>a.price-b.price);
-$('#passGrid').innerHTML = passes.map((p,i)=>{ const c=palette[i%palette.length]; return `
-  <article class="glass hud lift p-5 flex flex-col rv" style="transition-delay:${i*90}ms">
-    <div class="h-36 rounded-xl grid place-items-center text-6xl relative overflow-hidden" style="background:linear-gradient(135deg,${c[0]},${c[1]})">
-      <span class="floaty" style="animation-delay:${-i}s">${p.icon||'🎟️'}</span>
-      <span class="absolute inset-0" style="background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.35),transparent 55%)"></span>
-    </div>
-    <h3 class="disp font-extrabold text-lg mt-4">${p.name||('Пасс на '+fmt(p.price)+' R$')}</h3>
-    <div class="flex items-center gap-1.5 mt-1 font-semibold text-[color:var(--green)]">${robux(20)}${fmt(p.price)} R$</div>
-    <p class="text-sm text-[color:var(--muted)] mt-2 leading-relaxed flex-1">${p.desc||'Поддержка развития и продвижения проекта.'}</p>
-    <a class="btn mt-5" href="${p.url}" target="_blank" rel="noopener">Купить / Поддержать</a>
-  </article>`}).join('');
-
-/* ---- Roadmap ---- */
-$('#road').innerHTML = CFG.road.map((r,i)=>`
-  <div class="tl rv" style="transition-delay:${i*80}ms">
-    <span class="dot ${r.p>=80?'done':''}"></span>
-    <div class="glass lift p-5">
-      <div class="flex justify-between items-center gap-3 flex-wrap">
-        <h3 class="font-semibold">${r.t}</h3>
-        <span class="text-xs px-3 py-1 rounded-full border border-[color:var(--line)] text-[color:var(--muted)]">${r.s}</span>
-      </div>
-      <div class="flex items-center gap-3 mt-3"><div class="mini flex-1"><i data-w="${r.p}"></i></div><b class="disp text-sm ${r.p?'glow-g':''}">${r.p}%</b></div>
-    </div>
-  </div>`).join('');
-
-/* ---- Рефералки ---- */
+$('#rewards').innerHTML=CFG.rewards.map(r=>`<article class="reward"><div class="icon">${r.icon}</div><div class="price">${r.min}</div><h3>${r.title}</h3><p>${r.desc}</p></article>`).join('');
+$('#passGrid').innerHTML=CFG.passes.slice().sort((a,b)=>a.price-b.price).map(p=>`<article class="pass"><div class="pass-icon">${p.icon}</div><h3>${p.name}</h3><div class="price">${fmt(p.price)} ROBUX</div><p>${p.desc}</p><a class="btn" href="${p.url}" target="_blank" rel="noopener noreferrer">Поддержать ↗</a></article>`).join('');
+$('#road').innerHTML=CFG.road.map(r=>`<article class="road-item"><i class="road-dot"></i><div class="road-card"><div class="road-top"><h3>${r.title}</h3><span class="status">${r.status} · ${r.p}%</span></div><div class="road-bar"><i style="width:${r.p}%"></i></div></div></article>`).join('');
+$('#links').innerHTML=`
+ <a class="contact" href="${CFG.discordUrl}" target="_blank" rel="noopener"><span>◈</span><b>Discord-сервер</b><small>Сообщество и общение</small></a>
+ <a class="contact" href="${CFG.telegramUrl}" target="_blank" rel="noopener"><span>↗</span><b>Telegram-канал</b><small>Новости и обновления</small></a>
+ <a class="contact" href="https://t.me/${CFG.ownerTg}" target="_blank" rel="noopener"><span>✉</span><b>Написать владельцу</b><small>@${CFG.ownerTg}</small></a>
+ <button class="contact" id="copyDiscord" style="text-align:left;color:inherit;cursor:pointer"><span>⌘</span><b>Discord-контакт</b><small>${CFG.ownerDs} · нажми, чтобы скопировать</small></button>`;
+$('#copyDiscord').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(CFG.ownerDs);$('#copyDiscord small').textContent='Ник скопирован ✓'}catch(e){$('#copyDiscord small').textContent=CFG.ownerDs}
+});
 (function(){
-  const KEY='tdfl_ref'; let ref=null;
-  const q = new URLSearchParams(location.search).get('ref');
-  try{ if(q) localStorage.setItem(KEY,q.slice(0,24)); ref = localStorage.getItem(KEY); }catch(e){ ref = q; }
-  if(ref){ $('#refName').textContent = ref; $('#refBanner').classList.remove('hidden'); }
-  $('#refMake').addEventListener('click',()=>{
-    const n = $('#refInput').value.trim().replace(/[^A-Za-z0-9_\-]/g,'').slice(0,24);
-    if(!n){ $('#refInput').focus(); return; }
-    $('#refLink').value = `${location.origin}${location.pathname}?ref=${encodeURIComponent(n)}`;
-    $('#refOut').classList.remove('hidden');
-  });
-  $('#refCopy').addEventListener('click',e=>copy($('#refLink').value,e.currentTarget));
+ const key='frontline_ref';
+ const q=new URLSearchParams(location.search).get('ref');
+ try{if(q)localStorage.setItem(key,q.slice(0,24))}catch(e){}
+ $('#refMake').addEventListener('click',()=>{
+  const nick=$('#refInput').value.trim().replace(/[^A-Za-z0-9_-]/g,'').slice(0,24);
+  if(!nick){$('#refInput').focus();return}
+  $('#refLink').value=location.origin+location.pathname+'?ref='+encodeURIComponent(nick);
+  $('#refOut').classList.remove('hidden');
+ });
+ $('#refCopy').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText($('#refLink').value);$('#refCopy').textContent='Скопировано ✓'}catch(e){$('#refLink').select()}
+ });
 })();
-
-/* ---- Появление при скролле ---- */
-const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); e.target.querySelectorAll('[data-w]').forEach(b=>b.style.width=b.dataset.w+'%'); io.unobserve(e.target);} }),{threshold:.15});
-document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 </script>
 </body>
 </html>
