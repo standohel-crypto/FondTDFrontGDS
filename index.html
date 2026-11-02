@@ -66,7 +66,199 @@ h1,h2,h3,.disp{font-family:'Unbounded','Rubik',system-ui,sans-serif}
 .mini i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--green));transition:width 1.6s ease-out}
 .inp{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;color:var(--text)}
 .inp::placeholder{color:var(--muted)}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}/* ================================
+   FIELD JOURNAL
+================================ */
+
+.field-journal {
+    position: relative;
+    padding: 110px 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--line);
+    overflow: hidden;
+}
+
+.field-journal > .wrap {
+    width: min(1180px, calc(100% - 40px));
+    margin-inline: auto;
+}
+
+.journal-header {
+    max-width: 700px;
+    margin-bottom: 42px;
+}
+
+.journal-label {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--amber);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.journal-title {
+    margin: 0 0 18px;
+    color: var(--text);
+    font-size: clamp(30px, 5vw, 52px);
+    line-height: 1.15;
+}
+
+.journal-description {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.journal-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 20px;
+}
+
+.journal-card {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--bg);
+    transition: transform .3s ease, border-color .3s ease;
+}
+
+.journal-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--amber);
+}
+
+.journal-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    object-fit: cover;
+    transition: transform .5s ease;
+}
+
+.journal-card:hover img {
+    transform: scale(1.04);
+}
+
+.journal-card::after {
+    content: "";
+    position: absolute;
+    inset: 30% 0 0;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(6, 7, 13, .95)
+    );
+    pointer-events: none;
+}
+
+.journal-caption {
+    position: absolute;
+    z-index: 2;
+    right: 24px;
+    bottom: 24px;
+    left: 24px;
+}
+
+.journal-number {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--amber);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.journal-caption h3 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: 21px;
+}
+
+.journal-caption p {
+    margin: 0;
+    color: rgba(255, 255, 255, .72);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.journal-featured {
+    grid-row: span 2;
+}
+
+.journal-featured img {
+    min-height: 540px;
+}
+
+.journal-side {
+    min-height: 260px;
+}
+
+.journal-wide {
+    grid-column: 1 / -1;
+}
+
+.journal-wide img {
+    min-height: 320px;
+    max-height: 420px;
+}
+
+.journal-footer {
+    margin-top: 32px;
+    padding: 22px 26px;
+    border-left: 3px solid var(--amber);
+    border-radius: 0 12px 12px 0;
+    background: rgba(255, 176, 32, .06);
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.journal-footer strong {
+    color: var(--text);
+}
+
+/* Mobile */
+
+@media (max-width: 760px) {
+    .field-journal {
+        padding: 75px 0;
+    }
+
+    .journal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .journal-featured {
+        grid-row: auto;
+    }
+
+    .journal-featured img {
+        min-height: 350px;
+    }
+
+    .journal-side img {
+        min-height: 260px;
+    }
+
+    .journal-wide {
+        grid-column: auto;
+    }
+
+    .journal-wide img {
+        min-height: 260px;
+    }
+
+    .journal-caption {
+        right: 18px;
+        bottom: 18px;
+        left: 18px;
+    }
+}
 </style>
 </head>
 <body>
@@ -81,7 +273,8 @@ h1,h2,h3,.disp{font-family:'Unbounded','Rubik',system-ui,sans-serif}
     <div class="glass flex items-center justify-between px-4 py-2.5">
       <a href="#top" class="disp font-extrabold tracking-tight text-sm sm:text-base" id="logo"></a>
       <nav class="hidden md:flex gap-6 text-sm text-[color:var(--muted)]">
-        <a class="hover:text-white" href="#about">Об игре</a><a class="hover:text-white" href="#goal">Сбор</a><a class="hover:text-white" href="#honor">Награды</a><a class="hover:text-white" href="#passes">Пассы</a><a class="hover:text-white" href="#roadmap">Roadmap</a><a class="hover:text-white" href="#creators">Креаторам</a>
+        <a class="hover:text-white" href="#about">Об игре</a><a class="hover:text-white" href="#goal">Сбор</a><a class="hover:text-white" href="#honor">Награды</a><a class="hover:text-white" href="#passes">Пассы</a><a class="hover:text-white" href="#roadmap">Roadmap</a><a class="hover:text-white" href="#creators">Креаторам</a> 
+       <a class="hover:text-white" href="#field-journal">Разработка</a>
       </nav>
       <a href="#passes" class="btn !py-2 !px-4 text-sm">Поддержать</a>
     </div>
